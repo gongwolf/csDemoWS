@@ -54,9 +54,9 @@ public class test {
 		Data queryD = bm5.getDataById(queryPlaceId);
 		System.out.println(queryD);
 		bm5.baseline(queryD);
-		for(Result r:bm5.skyPaths) {
-			System.out.println(r);
-		}
+//		for(Result r:bm5.skyPaths) {
+//			System.out.println(r);
+//		}
 		return null;
 		
 	}

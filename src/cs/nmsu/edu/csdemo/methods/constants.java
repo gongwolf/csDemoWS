@@ -1,13 +1,17 @@
 package cs.nmsu.edu.csdemo.methods;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class constants {
 	public static final int path_dimension = 4; // 1(edu_dis)+3(road net work attrs)+3(static node attrs);
 
 	public static HashMap<Long, Long> accessedNodes = new HashMap<>();
 	public static HashMap<Long, Long> accessedEdges = new HashMap<>();
+	
+	public static HashSet<String> cityList = new HashSet<>(Arrays.asList("SF", "LA", "NY"));
 
 	public static void print(double[] costs) {
 		System.out.print("[");

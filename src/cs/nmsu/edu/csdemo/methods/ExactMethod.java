@@ -269,7 +269,7 @@ public class ExactMethod {
 //            }
 		}
 
-		sb.append("size of the final dataset:" + finalDatas.size() + " " + this.skyPaths.size() + "  " + add_counter
+		sb.append("size of the final hotels:" + finalDatas.size() + " " + this.skyPaths.size() + "  " + add_counter
 				+ " ");
 
 		int visited_bus_stop = this.tmpStoreNodes.size();

@@ -85,6 +85,7 @@ public class connector {
         	
         	while(nodes_iter.hasNext()) {
         		Node n = nodes_iter.next();
+//        		System.out.println(n);
         		Iterable<Relationship> rels = graphDB.getNodeById(n.getId()).getRelationships(Line.Linked, Direction.BOTH);
         		if (rels.iterator().hasNext()) {
                     Relationship rel = rels.iterator().next();
@@ -96,7 +97,7 @@ public class connector {
                 }
         	}
         	
-            System.out.println(propertiesName.size());
+//            System.out.println(propertiesName.size());
             tx.success();
         }
     }

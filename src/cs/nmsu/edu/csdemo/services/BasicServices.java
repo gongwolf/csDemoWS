@@ -12,6 +12,8 @@ import javax.ws.rs.core.MediaType;
 
 import org.json.JSONException;
 
+import cs.nmsu.edu.csdemo.methods.constants;
+
 @Path("/basic")
 public class BasicServices {
 	@Path("/getIOPInformationById/{city}/{id}")
@@ -19,6 +21,10 @@ public class BasicServices {
 	@Produces(MediaType.APPLICATION_JSON)
 	public IOPobject getIOPinformationById(@PathParam("id") int id, @PathParam("city") String city)
 			throws JSONException {
+		if(!constants.cityList.contains(city)) {
+			return null;
+		}
+		
 		IOPobject iobj = new IOPobject();
 		String home_folder = System.getProperty("user.home");
 		String dataPath = home_folder + "/mydata/DemoProject/data/staticNode_real_" + city + ".txt";
@@ -65,6 +71,11 @@ public class BasicServices {
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	public ArrayList<IOPobject> getAllIOPsByCity(@PathParam("city") String city) throws JSONException {
+		
+		if(!constants.cityList.contains(city)) {
+			return null;
+		}
+		
 		String home_folder = System.getProperty("user.home");
 		String dataPath = home_folder + "/mydata/DemoProject/data/staticNode_real_" + city + ".txt";
 
