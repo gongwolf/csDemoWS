@@ -12,6 +12,7 @@ public class constants {
 	public static HashMap<Long, Long> accessedEdges = new HashMap<>();
 	
 	public static HashSet<String> cityList = new HashSet<>(Arrays.asList("SF", "LA", "NY"));
+	public static HashSet<String> typeList = new HashSet<>(Arrays.asList("food", "lodging", "restaurant"));
 
 	public static void print(double[] costs) {
 		System.out.print("[");

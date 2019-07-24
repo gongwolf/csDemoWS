@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import cs.nmsu.edu.csdemo.RstarTree.*;
+import cs.nmsu.edu.csdemo.tools.GoogleMaps;
 
 public class Skyline {
     public ArrayList<Data> skylineStaticNodes = new ArrayList<>();
@@ -57,9 +58,9 @@ public class Skyline {
                 int n = dataN.get_num();
                 for (int i = 0; i < n; i++) {
                     if (!checkDominated(queryPoint.getData(), dataN.data[i].getData())) {
-//                        dataN.data[i].distance_q = GoogleMaps.distanceInMeters(dataN.data[i].location[0], dataN.data[i].location[1], queryPoint.location[0], queryPoint.location[1]);
-                        dataN.data[i].distance_q = Math.pow(dataN.data[i].location[0] - queryPoint.location[0], 2) + Math.pow(dataN.data[i].location[1] - queryPoint.location[1], 2);
-                        dataN.data[i].distance_q = Math.sqrt(dataN.data[i].distance_q);
+                        dataN.data[i].distance_q = GoogleMaps.distanceInMeters(dataN.data[i].location[0], dataN.data[i].location[1], queryPoint.location[0], queryPoint.location[1]);
+//                        dataN.data[i].distance_q = Math.pow(dataN.data[i].location[0] - queryPoint.location[0], 2) + Math.pow(dataN.data[i].location[1] - queryPoint.location[1], 2);
+//                        dataN.data[i].distance_q = Math.sqrt(dataN.data[i].distance_q);
                         this.skylineStaticNodes.add(dataN.data[i]);
                     }
                 }
@@ -87,9 +88,9 @@ public class Skyline {
                 RTDataNode dataN = (RTDataNode) o;
                 int n = dataN.get_num();
                 for (int i = 0; i < n; i++) {
-//                    dataN.data[i].distance_q = GoogleMaps.distanceInMeters(dataN.data[i].location[0], dataN.data[i].location[1], queryPoint.location[0], queryPoint.location[1]);
-                    dataN.data[i].distance_q = Math.pow(dataN.data[i].location[0] - queryPoint.location[0], 2) + Math.pow(dataN.data[i].location[1] - queryPoint.location[1], 2);
-                    dataN.data[i].distance_q = Math.sqrt(dataN.data[i].distance_q);
+                    dataN.data[i].distance_q = GoogleMaps.distanceInMeters(dataN.data[i].location[0], dataN.data[i].location[1], queryPoint.location[0], queryPoint.location[1]);
+//                    dataN.data[i].distance_q = Math.pow(dataN.data[i].location[0] - queryPoint.location[0], 2) + Math.pow(dataN.data[i].location[1] - queryPoint.location[1], 2);
+//                    dataN.data[i].distance_q = Math.sqrt(dataN.data[i].distance_q);
                     this.allNodes.add(dataN.data[i]);
                 }
             }
@@ -251,7 +252,63 @@ public class Skyline {
                     d.distance_q = Math.pow(dataN.data[i].location[0], 2) + Math.pow(dataN.data[i].location[1], 2);
                     d.distance_q = Math.sqrt(dataN.data[i].distance_q);
                     addToSkyline(d);
-//                    this.sky_hotels.add(d);
+                }
+            }
+        }
+    }
+    
+    public void findSkyline(Data queryD) {
+        myQueue queue = new myQueue();
+        queue.add(rt.root_ptr);
+        while (!queue.isEmpty()) {
+            Object o = queue.pop();
+            if (o.getClass() == RTDirNode.class) {
+                RTDirNode dirN = (RTDirNode) o;
+                int n = dirN.get_num();
+                for (int i = 0; i < n; i++) {
+                    Object succ_o = dirN.entries[i].get_son();
+                    if (!isDominatedByResult((Node) succ_o)) {
+                        queue.add(succ_o);
+                    }
+                }
+            } else if (o.getClass() == RTDataNode.class) {
+                RTDataNode dataN = (RTDataNode) o;
+                int n = dataN.get_num();
+                for (int i = 0; i < n; i++) {
+                    Data d = dataN.data[i];
+                    dataN.data[i].distance_q = GoogleMaps.distanceInMeters(dataN.data[i].location[0], dataN.data[i].location[1], queryD.location[0], queryD.location[1]);
+//                  dataN.data[i].distance_q = Math.pow(dataN.data[i].location[0] - queryPoint.location[0], 2) + Math.pow(dataN.data[i].location[1] - queryPoint.location[1], 2);
+//                  dataN.data[i].distance_q = Math.sqrt(dataN.data[i].distance_q);
+                    addToSkyline(d);
+                }
+            }
+        }
+    }
+    
+    
+    public void findSkyline(double lat, double lng) {
+        myQueue queue = new myQueue();
+        queue.add(rt.root_ptr);
+        while (!queue.isEmpty()) {
+            Object o = queue.pop();
+            if (o.getClass() == RTDirNode.class) {
+                RTDirNode dirN = (RTDirNode) o;
+                int n = dirN.get_num();
+                for (int i = 0; i < n; i++) {
+                    Object succ_o = dirN.entries[i].get_son();
+                    if (!isDominatedByResult((Node) succ_o)) {
+                        queue.add(succ_o);
+                    }
+                }
+            } else if (o.getClass() == RTDataNode.class) {
+                RTDataNode dataN = (RTDataNode) o;
+                int n = dataN.get_num();
+                for (int i = 0; i < n; i++) {
+                    Data d = dataN.data[i];
+                    dataN.data[i].distance_q = GoogleMaps.distanceInMeters(dataN.data[i].location[0], dataN.data[i].location[1], lat, lng);
+//                  dataN.data[i].distance_q = Math.pow(dataN.data[i].location[0] - queryPoint.location[0], 2) + Math.pow(dataN.data[i].location[1] - queryPoint.location[1], 2);
+//                  dataN.data[i].distance_q = Math.sqrt(dataN.data[i].distance_q);
+                    addToSkyline(d);
                 }
             }
         }

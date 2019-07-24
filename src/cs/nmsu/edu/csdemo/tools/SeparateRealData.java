@@ -10,7 +10,7 @@ import cs.nmsu.edu.csdemo.RstarTree.Data;
 import cs.nmsu.edu.csdemo.RstarTree.Node;
 import cs.nmsu.edu.csdemo.RstarTree.RTree;
 
-public class SyntheticRealData {
+public class SeparateRealData {
 	int dimension;
 	Random r = new Random(System.nanoTime());
 	String path_base = "/home/gqxwolf/mydata/DemoProject/data/"; // the folder that stores the bus and points of
@@ -24,7 +24,7 @@ public class SyntheticRealData {
 	int max_id = 0;
 	private DecimalFormat df2 = new DecimalFormat(".##");
 
-	public SyntheticRealData(int dimension) {
+	public SeparateRealData(int dimension) {
 		this.dimension = dimension;
 	}
 
@@ -35,7 +35,7 @@ public class SyntheticRealData {
 			dimension = Integer.parseInt(args[0]);
 		}
 
-		SyntheticRealData sd = new SyntheticRealData(dimension);
+		SeparateRealData sd = new SeparateRealData(dimension);
 		sd.readPOIsData();
 	}
 
@@ -70,12 +70,27 @@ public class SyntheticRealData {
 
 			for (String type : p_types) {
 				String path = this.poi_data + "/outfilename_" + type + "_" + city;
+				String tree_type_path = "/home/gqxwolf/mydata/DemoProject/data/real_tree_" + abbr_city +"_"+type +".rtr";
+				RTree type_rt = new RTree(tree_type_path, Constants.BLOCKLENGTH, Constants.CACHESIZE, dimension);
+				
+				// store the separate type data file
+				File type_file = new File("/home/gqxwolf/mydata/DemoProject/data/staticNode_real_" + abbr_city +"_"+type+ ".txt"); 
+				FileWriter type_fw = null;
+				BufferedWriter type_bw = null;
+				
+				if (type_file.exists()) {
+					type_file.delete();
+				}
 
 				try {
 
 					fw = new FileWriter(file.getAbsoluteFile(), true);
 					bw = new BufferedWriter(fw);
-
+					
+					type_fw = new FileWriter(type_file.getAbsoluteFile(),true);
+					type_bw = new BufferedWriter(type_fw);
+					
+					
 					File f = new File(path);
 					BufferedReader b = new BufferedReader(new FileReader(f));
 					String line = "";
@@ -87,6 +102,8 @@ public class SyntheticRealData {
 					poi_obj.g_p_id = "";
 					poi_obj.locations = new double[] { -1, -1 };
 					poi_obj.g_p_name = "";
+					
+					int type_counter = 0;
 
 					while (((line = b.readLine()) != null)) {
 
@@ -117,10 +134,17 @@ public class SyntheticRealData {
 								bw.write(poi_obj.placeID + "," + poi_obj.locations[0] + "," + poi_obj.locations[1] + ","
 										+ poi_obj.data[0] + "," + poi_obj.data[1] + "," + poi_obj.data[2] + ","
 										+ poi_obj.g_p_id +","+poi_obj.g_p_name+ "\n");
+								
+								type_bw.write(type_counter + "," + poi_obj.locations[0] + "," + poi_obj.locations[1] + ","
+										+ poi_obj.data[0] + "," + poi_obj.data[1] + "," + poi_obj.data[2] + ","
+										+ poi_obj.g_p_id +","+poi_obj.g_p_name+ "\n");
+								
 								System.out.println(
-										poi_obj.placeID + "," + poi_obj.locations[0] + "," + poi_obj.locations[1] + ","
+										type_counter + "," + poi_obj.locations[0] + "," + poi_obj.locations[1] + ","
 												+ poi_obj.data[0] + "," + poi_obj.data[1] + "," + poi_obj.data[2]);
 								rt.insert(d);
+								type_rt.insert(d);
+								type_counter++;
 							}
 
 							poi_obj.cleanContents();
@@ -139,12 +163,10 @@ public class SyntheticRealData {
 						} else if (line.startsWith("name:")) {
 							poi_obj.g_p_name = line.split(":")[1].trim();
 						}
-
 					}
 				} catch (IOException e) {
 					e.printStackTrace();
 				} finally {
-
 					try {
 
 						if (bw != null)
@@ -152,15 +174,22 @@ public class SyntheticRealData {
 
 						if (fw != null)
 							fw.close();
-//                System.out.println("Done!! See MCP_Results.csv for MCP of each cow for each day.");
+						
+						if (type_bw != null)
+							type_bw.close();
 
+						if (type_fw != null)
+							type_fw.close();
+					
 					} catch (IOException ex) {
-
 						ex.printStackTrace();
-
 					}
 				}
+				
+				System.out.println(tree_type_path);
+				type_rt.delete();
 			}
+			System.out.println(t_path);
 			rt.delete(); // write tree to disk
 			sum_counter += counter;
 		}

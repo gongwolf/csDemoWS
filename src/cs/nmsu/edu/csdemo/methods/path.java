@@ -19,7 +19,7 @@ public class path {
 	public ArrayList<Long> rels;
 	public ArrayList<String> propertiesName;
 
-	public path(myNode current) {
+	public path(myNode current,connector n) {
 		this.costs = new double[constants.path_dimension];
 		costs[0] = current.distance_q;
 		costs[1] = costs[2] = costs[3] = 0;
@@ -32,7 +32,7 @@ public class path {
 		this.rels = new ArrayList<>();
 		this.propertiesName = new ArrayList<>();
 
-		this.setPropertiesName();
+		this.setPropertiesName(n);
 
 		// store the Long Objects
 //		this.nodes.add(getLongObject_Node(this.endNode));
@@ -85,10 +85,10 @@ public class path {
 //        return result;
 //    }
 
-	public ArrayList<path> expand() {
+	public ArrayList<path> expand(connector n) {
 		ArrayList<path> result = new ArrayList<>();
-		try (Transaction tx = connector.graphDB.beginTx()) {
-			Iterable<Relationship> rels = connector.graphDB.getNodeById(this.endNode).getRelationships(Line.Linked,
+		try (Transaction tx = n.graphDB.beginTx()) {
+			Iterable<Relationship> rels = n.graphDB.getNodeById(this.endNode).getRelationships(Line.Linked,
 					Direction.OUTGOING);
 			Iterator<Relationship> rel_Iter = rels.iterator();
 			while (rel_Iter.hasNext()) {
@@ -114,8 +114,8 @@ public class path {
 		}
 	}
 
-	public void setPropertiesName() {
-		this.propertiesName = connector.propertiesName;
+	public void setPropertiesName(connector n) {
+		this.propertiesName = n.propertiesName;
 	}
 
 	public String toString() {

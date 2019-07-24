@@ -9,6 +9,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.json.JSONException;
 
@@ -19,7 +20,7 @@ public class BasicServices {
 	@Path("/getIOPInformationById/{city}/{id}")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public IOPobject getIOPinformationById(@PathParam("id") int id, @PathParam("city") String city)
+	public Response getIOPinformationById(@PathParam("id") int id, @PathParam("city") String city)
 			throws JSONException {
 		if(!constants.cityList.contains(city)) {
 			return null;
@@ -63,14 +64,14 @@ public class BasicServices {
 			e.printStackTrace();
 			System.err.println("Can not open the file, please check it. ");
 		}
-
-		return iobj;
+		
+		return Response.status(200).entity(iobj).header("Access-Control-Allow-Origin", "*").build();
 	}
 
 	@Path("/getAllIOPs/{city}")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public ArrayList<IOPobject> getAllIOPsByCity(@PathParam("city") String city) throws JSONException {
+	public Response getAllIOPsByCity(@PathParam("city") String city) throws JSONException {
 		
 		if(!constants.cityList.contains(city)) {
 			return null;
@@ -118,7 +119,9 @@ public class BasicServices {
 			System.err.println("Can not open the file, please check it. ");
 		}
 
-		return results;
+//		return results;
+		return Response.status(200).entity(results).header("Access-Control-Allow-Origin", "*").build();
+
 	}
 
 }
