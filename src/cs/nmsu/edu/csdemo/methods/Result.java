@@ -16,7 +16,17 @@ public class Result implements Comparable<Result> {
         p = np;
     }
 
-    @Override
+    public Result(double lat, double lng, Data destination, double[] c, path np) {
+    	this.start = new Data(constants.path_dimension-1);
+    	this.start.setPlaceId(-999);
+    	this.start.setLocation(new double[] {lat,lng});
+        
+    	this.end = destination;
+        System.arraycopy(c, 0, this.costs, 0, c.length);
+        p = np;
+	}
+
+	@Override
     public boolean equals(Object obj) {
         if (!(obj instanceof Result)) {
             return false;

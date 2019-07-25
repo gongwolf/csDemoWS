@@ -99,6 +99,30 @@ public class Skyline {
         queryPoint.distance_q = 0;
         this.allNodes.add(queryPoint);
     }
+    
+	public void allDatas(double lat, double lng) {
+		myQueue queue = new myQueue();
+        queue.add(rt.root_ptr);
+
+        while (!queue.isEmpty()) {
+            Object o = queue.pop();
+            if (o.getClass() == RTDirNode.class) {
+                RTDirNode dirN = (RTDirNode) o;
+                int n = dirN.get_num();
+                for (int i = 0; i < n; i++) {
+                    Object succ_o = dirN.entries[i].get_son();
+                    queue.add(succ_o);
+                }
+            } else if (o.getClass() == RTDataNode.class) {
+                RTDataNode dataN = (RTDataNode) o;
+                int n = dataN.get_num();
+                for (int i = 0; i < n; i++) {
+                    dataN.data[i].distance_q = GoogleMaps.distanceInMeters(dataN.data[i].location[0], dataN.data[i].location[1], lat, lng);
+                    this.allNodes.add(dataN.data[i]);
+                }
+            }
+        }
+	}
 
 
     public void allDatas() {

@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 public class constants {
-	public static final int path_dimension = 4; // 1(edu_dis)+3(road net work attrs)+3(static node attrs);
+	public static final int path_dimension = 4; // 1(edu_dis)+3(road net work attrs);
 
 	public static HashMap<Long, Long> accessedNodes = new HashMap<>();
 	public static HashMap<Long, Long> accessedEdges = new HashMap<>();
@@ -32,7 +32,6 @@ public class constants {
 
 	public static double distanceInMeters(double lat1, double long1, double lat2, double long2) {
 		long R = 6371000;
-
 		double d;
 		// method 1
 //        double r_lat1 = Math.PI / 180 * lat1;
@@ -51,13 +50,22 @@ public class constants {
 //        System.out.println(d);
 
 		// method 3
-		double r_lat1 = Math.PI / 180 * lat1;
-		double r_lat2 = Math.PI / 180 * lat2;
-		double delta_long = Math.PI / 180 * (long2 - long1);
-		d = Math.acos(Math.sin(r_lat1) * Math.sin(r_lat2) + Math.cos(r_lat1) * Math.cos(r_lat2) * Math.cos(delta_long))
-				* R;
+//		double r_lat1 = Math.PI / 180 * lat1;
+//		double r_lat2 = Math.PI / 180 * lat2;
+//		double delta_long = Math.PI / 180 * (long2 - long1);
+//		d = Math.acos(Math.sin(r_lat1) * Math.sin(r_lat2) + Math.cos(r_lat1) * Math.cos(r_lat2) * Math.cos(delta_long)) * R;
 //		System.out.println(d);
-		return d;
+		
+		
+		//method 4
+	    double dLat = lat2 * Math.PI / 180 - lat1 * Math.PI / 180;
+	    double dLon = long2 * Math.PI / 180 - long1 * Math.PI / 180;
+	    double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+	    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+	    Math.sin(dLon/2) * Math.sin(dLon/2);
+	    double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+	    d = R * c;
+	    return d;
 	}
 
 }

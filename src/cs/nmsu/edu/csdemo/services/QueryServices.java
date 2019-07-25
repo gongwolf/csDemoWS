@@ -29,6 +29,7 @@ public class QueryServices {
 	String homepath = System.getProperty("user.home");
 	int t_distance = 40;
 
+	/**Group of exact methods**/
 	@Path("/improvedExact/{city}/{id}")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
@@ -54,11 +55,10 @@ public class QueryServices {
 		return Response.status(200).entity(result).header("Access-Control-Allow-Origin", "*").build();
 	}
 
-	@Path("/improvedExact/{city}/{lat}/{lng}")
+	@Path("/improvedExactLocation/{city}/{lat}/{lng}")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response improvedExactQueryByLocation(@PathParam("city") String city, @PathParam("lat") double lat,
-			@PathParam("lng") double lng) {
+	public Response improvedExactQueryByLocation(@PathParam("city") String city, @PathParam("lat") double lat, @PathParam("lng") double lng) {
 
 		if (!constants.cityList.contains(city)) {
 			return null;
@@ -66,10 +66,9 @@ public class QueryServices {
 
 		int isAIOP = isAInterestingOfPoint(city, lat, lng);
 		
-//		if(isAIOP!=-1) {
-//			System.out.println(isAIOP+"     "+city);
-//			return improvedExactQueryById(isAIOP,city);
-//		}else {
+		if(isAIOP!=-1) {
+			return improvedExactQueryById(isAIOP,city);
+		}else {
 			ExactMethod bm5 = new ExactMethod(city);
 			bm5.baseline(lat, lng);
 
@@ -80,12 +79,41 @@ public class QueryServices {
 			}
 
 			updateBeansNodeLocationInformation(result, city);
-//			return result;
 			return Response.status(200).entity(result).header("Access-Control-Allow-Origin", "*").build();
 			
-//		}
+		}
 	}
+	
+	@Path("/improvedExactLocationType/{city}/{type}/{lat}/{lng}")
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response improvedExactQueryByLocationType(@PathParam("city") String city, @PathParam("lat") double lat, @PathParam("lng") double lng, @PathParam("type") String type) {
 
+		if (!constants.cityList.contains(city)) {
+			return null;
+		}
+
+		int isAIOP = isAInterestingOfPoint(city, lat, lng);
+		
+		if(isAIOP!=-1) {
+			System.out.println(isAIOP+"     "+city);
+			return improvedExactQueryByIdType(isAIOP,city,type);
+		}else {
+			ExactMethod bm5 = new ExactMethod(city,type);
+			bm5.baseline(lat, lng);
+
+			ArrayList<ResultBean> result = new ArrayList<>();
+			for (Result r : bm5.skyPaths) {
+				ResultBean rbean = new ResultBean(r);
+				result.add(rbean);
+			}
+
+			updateBeansNodeLocationInformation(result, city);
+//			return result;
+			return Response.status(200).entity(result).header("Access-Control-Allow-Origin", "*").build();	
+		}
+	}
+	
 	@Path("/improvedExact/{city}/{type}/{id}")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
@@ -115,6 +143,8 @@ public class QueryServices {
 		return Response.status(200).entity(result).header("Access-Control-Allow-Origin", "*").build();
 	}
 
+	
+	/** Group of approximate Range indexed methods **/
 	@Path("/approxRangeIndexed/{city}/{id}/{threshold}")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
@@ -140,12 +170,71 @@ public class QueryServices {
 		return Response.status(200).entity(result).header("Access-Control-Allow-Origin", "*").build();
 
 	}
+	
+	@Path("/approxRangeIndexedLocation/{city}/{lat}/{lng}/{threshold}")
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response ApproxRangeIndexedQueryByLocation(@PathParam("city") String city, @PathParam("lat") double lat, @PathParam("lng") double lng, @PathParam("threshold") double distance_threshold) {
 
+		if (!constants.cityList.contains(city)) {
+			return null;
+		}
+		
+		
+		int isAIOP = isAInterestingOfPoint(city, lat, lng);
+		
+		if(isAIOP!=-1) {
+			return ApproxRangeIndexedQueryById(isAIOP,city,distance_threshold);
+		}else {
+			ApproxRangeIndex approx_range_index = new ApproxRangeIndex(city, distance_threshold);
+			approx_range_index.baseline(lat,lng); 
+
+			ArrayList<ResultBean> result = new ArrayList<>();
+			for (Result r : approx_range_index.skyPaths) {
+				ResultBean rbean = new ResultBean(r);
+				result.add(rbean);
+			}
+
+			updateBeansNodeLocationInformation(result, city);
+			return Response.status(200).entity(result).header("Access-Control-Allow-Origin", "*").build();
+		}
+	}
+	
+	@Path("/approxRangeIndexedLocationType/{city}/{type}/{lat}/{lng}/{threshold}")
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response ApproxRangeIndexedQueryByLocationType(@PathParam("city") String city, @PathParam("lat") double lat, @PathParam("lng") double lng,
+			@PathParam("threshold") double distance_threshold, @PathParam("type") String type) {
+
+		if (!constants.cityList.contains(city)) {
+			return null;
+		}
+		
+		
+		int isAIOP = isAInterestingOfPoint(city, lat, lng);
+		
+		if(isAIOP!=-1) {
+			return ApproxRangeIndexedQueryByIdType(isAIOP,city,distance_threshold,type);
+		}else {
+			ApproxRangeIndex approx_range_index = new ApproxRangeIndex(city, distance_threshold,type);
+			approx_range_index.baseline(lat,lng); 
+			
+			ArrayList<ResultBean> result = new ArrayList<>();
+			for (Result r : approx_range_index.skyPaths) {
+				ResultBean rbean = new ResultBean(r);
+				result.add(rbean);
+			}
+
+			updateBeansNodeLocationInformation(result, city);
+			return Response.status(200).entity(result).header("Access-Control-Allow-Origin", "*").build();
+		}
+	}
+
+	
 	@Path("/approxRangeIndexed/{city}/{type}/{id}/{threshold}")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response ApproxRangeIndexedQueryByIdType(@PathParam("id") int queryPlaceId, @PathParam("city") String city,
-			@PathParam("threshold") double distance_threshold, @PathParam("type") String type) {
+	public Response ApproxRangeIndexedQueryByIdType(@PathParam("id") int queryPlaceId, @PathParam("city") String city, @PathParam("threshold") double distance_threshold, @PathParam("type") String type) {
 
 		if (!constants.cityList.contains(city)) {
 			return null;
@@ -167,11 +256,13 @@ public class QueryServices {
 
 	}
 
+	
+	/** Group of approximate mixed indexed methods **/
+	
 	@Path("/approxMixedIndexed/{city}/{id}/{threshold}")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response ApproxMixedIndexedQueryById(@PathParam("id") int queryPlaceId, @PathParam("city") String city,
-			@PathParam("threshold") double distance_threshold) {
+	public Response ApproxMixedIndexedQueryById(@PathParam("id") int queryPlaceId, @PathParam("city") String city, @PathParam("threshold") double distance_threshold) {
 
 		if (!constants.cityList.contains(city)) {
 			return null;
@@ -193,6 +284,7 @@ public class QueryServices {
 		return Response.status(200).entity(result).header("Access-Control-Allow-Origin", "*").build();
 
 	}
+	
 
 	@Path("/approxMixedIndexed/{city}/{type}/{id}/{threshold}")
 	@GET
@@ -220,6 +312,66 @@ public class QueryServices {
 
 	}
 
+	@Path("/approxMixedIndexedLocation/{city}/{lat}/{lng}/{threshold}")
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response ApproxMixedIndexedQueryByLocation(@PathParam("city") String city, @PathParam("lat") double lat, @PathParam("lng") double lng, @PathParam("threshold") double distance_threshold) {
+
+		if (!constants.cityList.contains(city)) {
+			return null;
+		}
+		
+		int isAIOP = isAInterestingOfPoint(city, lat, lng);
+		
+		if(isAIOP!=-1) {
+			return ApproxMixedIndexedQueryById(isAIOP,city,distance_threshold);
+		}else {
+			ApproxMixedIndex approx_mixed_index = new ApproxMixedIndex(city, distance_threshold);
+			approx_mixed_index.baseline(lat, lng);
+
+			ArrayList<ResultBean> result = new ArrayList<>();
+			for (Result r : approx_mixed_index.skyPaths) {
+				ResultBean rbean = new ResultBean(r);
+				result.add(rbean);
+			}
+
+			updateBeansNodeLocationInformation(result, city);
+//			return result;
+			return Response.status(200).entity(result).header("Access-Control-Allow-Origin", "*").build();
+		}
+	}
+	
+	@Path("/approxMixedIndexedLocationType/{city}/{type}/{lat}/{lng}/{threshold}")
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response ApproxMixedIndexedQueryByLocationType(@PathParam("city") String city, @PathParam("lat") double lat, @PathParam("lng") double lng, @PathParam("threshold") double distance_threshold, @PathParam("type") String type) {
+
+		if (!constants.cityList.contains(city)) {
+			return null;
+		}
+		
+		
+		int isAIOP = isAInterestingOfPoint(city, lat, lng);
+		
+		if(isAIOP!=-1) {
+			return ApproxMixedIndexedQueryByIdType(isAIOP,city,distance_threshold,type);
+		}else {
+			ApproxMixedIndex approx_range_index = new ApproxMixedIndex(city, distance_threshold,type);
+			approx_range_index.baseline(lat,lng); 
+
+			ArrayList<ResultBean> result = new ArrayList<>();
+			for (Result r : approx_range_index.skyPaths) {
+				ResultBean rbean = new ResultBean(r);
+				result.add(rbean);
+			}
+
+			updateBeansNodeLocationInformation(result, city);
+			return Response.status(200).entity(result).header("Access-Control-Allow-Origin", "*").build();
+		}
+	}
+
+	
+	/**Auxiliary functions**/
 	// get location information of each bus top and update the result
 	private void updateBeansNodeLocationInformation(ArrayList<ResultBean> result, String city) {
 		String home_folder = System.getProperty("user.home");
@@ -249,6 +401,8 @@ public class QueryServices {
 		double min_distance = Double.MAX_VALUE;
 		String datapath = this.homepath + "/mydata/DemoProject/data/staticNode_real_" + city + ".txt";
 
+		double[] targetLocations = new double[2];
+		
 		BufferedReader reader;
 		try {
 			reader = new BufferedReader(new FileReader(datapath));
@@ -257,9 +411,13 @@ public class QueryServices {
 				double lat2 = Double.parseDouble(line.split(",")[1]);
 				double lng2 = Double.parseDouble(line.split(",")[2]);
 				double distance = constants.distanceInMeters(lat,lng,lat2,lng2);
-				if(distance < t_distance && distance < min_distance) {
+				if(distance < min_distance) {
 					min_distance = distance;
-					isIOP = Integer.parseInt(line.split(",")[0]);
+					if(distance < t_distance) {
+						isIOP = Integer.parseInt(line.split(",")[0]);
+						targetLocations[0] = lat2;
+						targetLocations[1] = lng2;
+					}
 				}
 				line = reader.readLine();
 			}
@@ -268,15 +426,41 @@ public class QueryServices {
 			e.printStackTrace();
 		}
 
-		System.out.println(isIOP+" -->> distance to query location is "+min_distance);
+		System.out.println(isIOP+" -->> distance to query location is "+(long)min_distance+"m   "+lat+" "+lng+"     "+targetLocations[0]+" "+targetLocations[1]);
+//		constants.distanceInMeters(lat,lng,targetLocations[0],targetLocations[1]);
 		return isIOP;
 	}
-
+	
+	/**Testing main function**/
 	public static void main(String args[]) {
-		System.out.println("hello world");
 		QueryServices qs = new QueryServices();
-		System.out.println(qs.improvedExactQueryByLocation("NY", 40.9052323,-73.9009833));
-		System.out.println("============================================================");
-		System.out.println(qs.improvedExactQueryById(5079, "NY"));
+		qs.improvedExactQueryByLocation("NY", 40.9062324,-73.90143);
+		System.out.println("======================================================");
+		qs.improvedExactQueryById(5079, "NY");
+		
+		System.out.println("======================================================");
+		qs.improvedExactQueryByLocationType("NY", 40.9062324,-73.90143,"food");
+		System.out.println("======================================================");
+		qs.improvedExactQueryByIdType(5079, "NY","food");
+		
+		
+		System.out.println("======================================================");
+		qs.ApproxRangeIndexedQueryByLocation("NY", 40.9062324,-73.90143,850);
+		System.out.println("======================================================");
+		qs.ApproxRangeIndexedQueryById(5079, "NY",850);
+		System.out.println("======================================================");
+		qs.ApproxRangeIndexedQueryByLocationType("NY", 40.9062324,-73.90143,850,"food");
+		System.out.println("======================================================");
+		qs.ApproxRangeIndexedQueryByIdType(5079, "NY",850,"food");
+		
+		
+		System.out.println("======================================================");
+		qs.ApproxMixedIndexedQueryByLocation("NY", 40.9062324,-73.90143,850);
+		System.out.println("======================================================");
+		qs.ApproxMixedIndexedQueryById(5079, "NY",850);
+		System.out.println("======================================================");
+		qs.ApproxMixedIndexedQueryByLocationType("NY", 40.9062324,-73.90143,850,"food");
+		System.out.println("======================================================");
+		qs.ApproxMixedIndexedQueryByIdType(5079, "NY",850,"food");
 	}
 }

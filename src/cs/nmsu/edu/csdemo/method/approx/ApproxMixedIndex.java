@@ -320,6 +320,302 @@ public class ApproxMixedIndex {
 //        System.out.println(sky_add_result_counter + "/" + add_counter + "=" + (double) sky_add_result_counter / add_counter);
 
 	}
+	
+	
+	
+	public void baseline(double lat, double lng) {
+		this.tmpStoreNodes.clear();
+		long startNode_id = nearestNetworkNode(lat,lng);
+
+//        System.out.println(queryD);
+		long r1 = System.currentTimeMillis();
+
+//        String graphPath = home_folder + "/neo4j334/testdb_real_50/databases/graph.db";
+		long s_sum = System.currentTimeMillis();
+		long db_time = System.currentTimeMillis();
+		constants.accessedEdges.clear();
+		constants.accessedNodes.clear();
+		connector n = new connector(graphPath);
+		n.startDB();
+		this.graphdb = n.getDBObject();
+
+		long counter = 0;
+		long addResult_rt = 0;
+		long expasion_rt = 0;
+		int sk_counter = 0; // the number of total candidate hotels of each bus station
+
+		db_time = System.currentTimeMillis() - db_time;
+		r1 = System.currentTimeMillis();
+		long nn_rt = System.currentTimeMillis() - r1;
+//        System.out.println("find the nearest bus stop " + nn_rt + "  ms  ");
+
+		StringBuffer sb = new StringBuffer();
+		sb.append("[" + lat + "," + lng+ "]" + " ");
+
+		Skyline sky = new Skyline(treePath);
+
+		// find the skyline hotels of the whole dataset.
+		sky.findSkyline(lat, lng);
+		this.sky_hotel = new ArrayList<>(sky.sky_hotels);
+		long index_s = 0;
+
+		r1 = System.currentTimeMillis();
+		// Find the hotels that aren't dominated by the query point
+		sky.allDatas(lat, lng);
+		long bbs_rt = System.currentTimeMillis() - r1;
+		sNodes = sky.allNodes;
+
+
+		for (Data d : sNodes) {
+			double[] c = new double[constants.path_dimension + 3];
+			c[0] = d.distance_q;
+
+			if (c[0] <= this.distance_threshold) {
+				double[] d_attrs = d.getData();
+				for (int i = 4; i < c.length; i++) {
+					c[i] = d_attrs[i - 4];
+				}
+				Result r = new Result(lat,lng, d, c, null);
+				addToSkyline(r);
+			}
+		}
+		
+		
+		sb.append(this.sNodes.size() + " " + this.sky_hotel.size() + " "+this.skyPaths.size()+" " );
+
+
+		// find the minimum distance from query point to the skyline hotel that dominate
+		// non-skyline hotel cand_d
+		for (Data cand_d : sNodes) {
+			double h_to_h_dist = Double.MAX_VALUE;
+			if (!this.sky_hotel.contains(cand_d)) {
+				for (Data s_h : this.sky_hotel) {
+					if (checkDominated(s_h.getData(), cand_d.getData())) {
+						double tmep_dist = s_h.distance_q;
+						if (tmep_dist < h_to_h_dist) {
+							h_to_h_dist = tmep_dist;
+						}
+					}
+				}
+			} else {
+				h_to_h_dist = Double.MAX_VALUE;
+			}
+			dominated_checking.put(cand_d.getPlaceId(), h_to_h_dist);
+		}
+
+		int visited_bus_stop = 0;
+		try (Transaction tx = n.graphDB.beginTx()) {
+
+			long rt = System.currentTimeMillis();
+
+			myNode s = new myNode(lat,lng, startNode_id, this.distance_threshold, n);
+//            myNode s = new myNode(queryD, startNode_id, -1);
+
+//            myNodePriorityQueueNoCp mqueue = new myNodePriorityQueueNoCp();
+			myNodePriorityQueue mqueue = new myNodePriorityQueue();
+			mqueue.add(s);
+
+			this.tmpStoreNodes.put(s.id, s);
+
+			while (!mqueue.isEmpty()) {
+
+				myNode v = mqueue.pop();
+				v.inqueue = false;
+				counter++;
+
+				path[] needToProcess = new path[constants.path_dimension];
+				for (path p : v.skyPaths) {
+//                    if (!p.expaned) {
+					if (p.isDummyPath()) {
+						needToProcess[0] = p;
+					} else if (needToProcess[1] == null) {
+						for (int i = 1; i < needToProcess.length; i++) {
+							needToProcess[i] = p;
+						}
+					} else {
+						for (int i = 1; i < needToProcess.length; i++) {
+							if (needToProcess[i].costs[i] > p.costs[i]) {
+								needToProcess[i] = p;
+							}
+						}
+					}
+//                    }
+				}
+
+				for (int i = 0; i < needToProcess.length; i++) {
+					path p = needToProcess[i];
+					if (p != null && !p.expaned) {
+						p.expaned = true;
+
+						long ee = System.nanoTime();
+						ArrayList<path> new_paths = p.expand(n);
+						expasion_rt += (System.nanoTime() - ee);
+
+						for (path np : new_paths) {
+							myNode next_n;
+							if (this.tmpStoreNodes.containsKey(np.endNode)) {
+								next_n = tmpStoreNodes.get(np.endNode);
+							} else {
+								next_n = new myNode(lat,lng, np.endNode, this.distance_threshold, n);
+								this.tmpStoreNodes.put(next_n.id, next_n);
+							}
+
+							// lemma 2
+							if (!(this.tmpStoreNodes.get(np.startNode).distance_q > next_n.distance_q)) {
+								if (next_n.addToSkyline(np) && !next_n.inqueue) {
+									mqueue.add(next_n);
+									next_n.inqueue = true;
+								}
+							}
+						}
+					}
+				}
+			}
+
+			long exploration_rt = System.currentTimeMillis() - rt;
+
+			long tt_sl = 0;
+
+//            hotels_scope = new HashMap<>();
+
+//            System.out.println("there are " + this.tmpStoreNodes.size() + " bus stops are visited");
+
+			int process_visited_stations = 0;
+			for (Map.Entry<Long, myNode> entry : tmpStoreNodes.entrySet()) {
+				sk_counter += entry.getValue().skyPaths.size();
+			}
+
+//            System.out.println(sk_counter+"~~~~~");
+
+			Index idx = new Index(city, distance_threshold);
+			for (Map.Entry<Long, myNode> entry : tmpStoreNodes.entrySet()) {
+				long t_index_s = System.nanoTime();
+				myNode my_n = entry.getValue();
+				ArrayList<Data> d_list = idx.read_d_list_from_disk(my_n.id);
+				index_s += (System.nanoTime() - t_index_s);
+
+				for (path p : my_n.skyPaths) {
+//                    if (!p.rels.isEmpty() && p.expaned) {
+					if (p.expaned) {
+						long ats = System.nanoTime();
+						boolean f = addToSkylineResultLocation(lat,lng, p, d_list);
+						addResult_rt += System.nanoTime() - ats;
+					}
+//                    }
+				}
+			}
+
+			visited_bus_stop = this.tmpStoreNodes.size();
+
+//            System.out.println(sk_counter);
+
+			sb.append(bbs_rt + "," + nn_rt + "," + exploration_rt + "," + (index_s / 1000000));
+			tx.success();
+		}
+
+		long shut_db_time = System.currentTimeMillis();
+		n.shutdownDB();
+		shut_db_time = System.currentTimeMillis() - shut_db_time;
+
+		s_sum = System.currentTimeMillis() - s_sum;
+//        System.out.println(s_sum+" "+db_time+" "+shut_db_time+" "+index_s);
+		sb.append("| running time(ms):" + (s_sum - db_time - shut_db_time - (index_s / 1000000)) + "|");
+		sb.append(" # of final skyline results:" + this.skyPaths.size() + ", counter:" + counter + "|");
+		sb.append("time used to add to skyline: " + addResult_rt / 1000000 + "(" + (this.add_oper / 1000000) + "+"
+				+ (this.check_add_oper / 1000000) + "+" + (this.map_operation / 1000000) + "+"
+				+ (this.checkEmpty / 1000000) + "+" + (this.read_data / 1000000) + "),");
+		sb.append("time used to expasion: " + expasion_rt / 1000000 + ", ");
+
+		List<Result> sortedList = new ArrayList(this.skyPaths);
+		Collections.sort(sortedList);
+
+		HashSet<Long> final_bus_stops = new HashSet<>();
+
+		for (Result r : sortedList) {
+			this.finalDatas.add(r.end.getPlaceId());
+//            if (r.p != null) {
+//                for (Long nn : r.p.nodes) {
+//                    final_bus_stops.add(nn);
+//                }
+//            }
+		}
+
+		sb.append(finalDatas.size() + " " + this.skyPaths.size() + " " + sk_counter + "  " + add_counter + " ");
+
+		int bus_stop_in_result = final_bus_stops.size();
+
+		sb.append("  " + visited_bus_stop + "," + bus_stop_in_result + ","
+				+ (double) bus_stop_in_result / visited_bus_stop + "   " + this.sky_add_result_counter);
+
+		System.out.println(sb.toString());
+	}
+
+	private boolean addToSkylineResultLocation(double lat, double lng, path np, ArrayList<Data> d_list) {
+		this.add_counter++;
+		long r2a = System.nanoTime();
+		this.checkEmpty += System.nanoTime() - r2a;
+
+		long rr = System.nanoTime();
+		myNode my_endNode = this.tmpStoreNodes.get(np.endNode);
+		this.map_operation += System.nanoTime() - rr;
+
+		long dsad = System.nanoTime();
+		long d1 = 0, d2 = 0;
+		boolean flag = false;
+
+		for (Data d : d_list) {
+			if (!this.dominated_checking.containsKey(d.getPlaceId())) {
+				continue;
+			}
+//            if (np.startNode.getId() == 286 && np.endNode.getId() == 1862) {
+//                if (d.getPlaceId() == 62) {
+//                    System.out.println("true");
+//                }
+//            }
+
+			this.pro_add_result_counter++;
+			long rrr = System.nanoTime();
+
+			double[] final_costs = new double[np.costs.length + 3];
+			System.arraycopy(np.costs, 0, final_costs, 0, np.costs.length);
+//			double end_distance = Math.sqrt(Math.pow(my_endNode.locations[0] - d.location[0], 2)
+//					+ Math.pow(my_endNode.locations[1] - d.location[1], 2));
+//			d.distance_q = Math.sqrt(
+//					Math.pow(queryD.location[0] - d.location[0], 2) + Math.pow(queryD.location[1] - d.location[1], 2));
+			double end_distance = GoogleMaps.distanceInMeters(my_endNode.locations[0], my_endNode.locations[1],
+					d.location[0], d.location[1]);
+			d.distance_q = GoogleMaps.distanceInMeters(lat, lng, d.location[0],d.location[1]);
+
+			final_costs[0] += end_distance;
+
+			if (final_costs[0] < d.distance_q && final_costs[0] < this.dominated_checking.get(d.getPlaceId())) {
+
+				double[] d_attrs = d.getData();
+				for (int i = 4; i < final_costs.length; i++) {
+					final_costs[i] = d_attrs[i - 4];
+				}
+
+				Result r = new Result(lat,lng, d, final_costs, np);
+
+				this.check_add_oper += System.nanoTime() - rrr;
+				d1 += System.nanoTime() - rrr;
+				long rrrr = System.nanoTime();
+				this.sky_add_result_counter++;
+				boolean t = addToSkyline(r);
+
+				this.add_oper += System.nanoTime() - rrrr;
+				d2 += System.nanoTime() - rrrr;
+
+				if (!flag && t) {
+					flag = true;
+				}
+			}
+		}
+
+		this.read_data += (System.nanoTime() - d1 - d2 - dsad);
+		return flag;
+	}
+
 
 	private boolean addToSkylineResult(path np, ArrayList<Data> d_list) {
 		this.add_counter++;
@@ -442,6 +738,34 @@ public class ApproxMixedIndex {
 		conn.shutdownDB();
 
 //        System.out.println(counter_in_range + " bus stations within hotel " + this.distance_threshold);
+		return nn_node.getId();
+	}
+	
+	
+	public long nearestNetworkNode(double q_lat, double q_lng) {
+
+		Node nn_node = null;
+		double distz = Double.MAX_VALUE;
+		int counter_in_range = 0;
+		connector conn = new connector(graphPath);
+		conn.startDB();
+		try (Transaction tx = conn.graphDB.beginTx()) {
+
+			ResourceIterable<Node> iter = conn.graphDB.getAllNodes();
+			for (Node n : iter) {
+				double lat = (double) n.getProperty("lat");
+				double log = (double) n.getProperty("log");
+
+				double temp_distz = Math.sqrt(Math.pow(lat - q_lat, 2) + Math.pow(log - q_lng, 2));
+				if (distz > temp_distz) {
+					nn_node = n;
+					distz = temp_distz;
+				}
+			}
+			tx.success();
+		}
+
+		conn.shutdownDB();
 		return nn_node.getId();
 	}
 

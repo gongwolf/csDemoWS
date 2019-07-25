@@ -310,12 +310,21 @@ public class ExactMethod {
 
 		long r1 = System.currentTimeMillis();
 //		 Find the hotels that aren't dominated by the query point
-		sky.allDatas();
+		sky.allDatas(lat, lng);
 		long bbs_rt = System.currentTimeMillis() - r1;
 		sNodes = sky.allNodes;
 
+		for (Data d : sNodes) {
+			double[] c = new double[constants.path_dimension + 3];
+			c[0] = d.distance_q;
+			double[] d_attrs = d.getData();
+			for (int i = 4; i < c.length; i++) {
+				c[i] = d_attrs[i - 4];
+			}
+			Result r = new Result(lat,lng, d, c, null);
+			addToSkyline(r);
+		}
 		sb.append(this.sNodes.size() + " " + this.sky_hotel.size() + " " + this.skyPaths.size() + " ");
-
 		// find the minimum distance from query point to the skyline hotel that dominate non-skyline hotel cand_d
 		for (Data cand_d : sNodes) {
 			double h_to_h_dist = Double.MAX_VALUE;
@@ -417,7 +426,7 @@ public class ExactMethod {
 //                    if (!p.rels.isEmpty()) {
 					long ats = System.nanoTime();
 
-					boolean f = addToSkylineResult(p, sNodes); //TODO: create new addToSkylineResult method
+					boolean f = addToSkylineResultByLocation(lat,lng,p, sNodes); 
 
 					addResult_rt += System.nanoTime() - ats;
 //                    }
@@ -532,6 +541,76 @@ public class ExactMethod {
 				}
 
 				Result r = new Result(this.queryD, d, final_costs, np);
+
+				this.check_add_oper += System.nanoTime() - rrr;
+				d1 += System.nanoTime() - rrr;
+				long rrrr = System.nanoTime();
+				this.sky_add_result_counter++;
+				boolean t = addToSkyline(r);
+
+				this.add_oper += System.nanoTime() - rrrr;
+				d2 += System.nanoTime() - rrrr;
+
+				if (!flag && t) {
+					flag = true;
+				}
+			}
+		}
+
+		this.read_data += (System.nanoTime() - d1 - d2 - dsad);
+		return flag;
+	}
+	
+	
+	
+	private boolean addToSkylineResultByLocation(double lat, double lng, path np, ArrayList<Data> d_list) {
+		this.add_counter++;
+		long r2a = System.nanoTime();
+
+		if (np.rels.isEmpty()) {
+			return false;
+		}
+		if (np.isDummyPath()) {
+			return false;
+		}
+
+		this.checkEmpty += System.nanoTime() - r2a;
+
+		long rr = System.nanoTime();
+		myNode my_endNode = this.tmpStoreNodes.get(np.endNode);
+		this.map_operation += System.nanoTime() - rr;
+			
+		long dsad = System.nanoTime();
+		long d1 = 0, d2 = 0;
+		boolean flag = false;
+
+		for (Data d : d_list) {
+				
+			this.pro_add_result_counter++;
+			long rrr = System.nanoTime();
+
+			double[] final_costs = new double[np.costs.length + 3];
+			System.arraycopy(np.costs, 0, final_costs, 0, np.costs.length);
+//			double end_distance = Math.sqrt(Math.pow(my_endNode.locations[0] - d.location[0], 2)
+//						+ Math.pow(my_endNode.locations[1] - d.location[1], 2));
+
+//	        d.distance_q = Math.sqrt(Math.pow(d.location[0] - queryD.location[0], 2) + Math.pow(d.location[1] - queryD.location[1], 2));
+
+			double end_distance = GoogleMaps.distanceInMeters(my_endNode.locations[0], my_endNode.locations[1],d.location[0], d.location[1]);
+
+			final_costs[0] += end_distance;
+			// lemma3
+			// double d3 = Math.sqrt(Math.pow(d.location[0] - queryD.location[0], 2) +
+			// Math.pow(d.location[1] - queryD.location[1], 2));
+
+			if (final_costs[0] < d.distance_q && final_costs[0] < this.dominated_checking.get(d.getPlaceId())) {
+
+				double[] d_attrs = d.getData();
+				for (int i = 4; i < final_costs.length; i++) {
+					final_costs[i] = d_attrs[i - 4];
+				}
+
+				Result r = new Result(lat,lng, d, final_costs, np);
 
 				this.check_add_oper += System.nanoTime() - rrr;
 				d1 += System.nanoTime() - rrr;
