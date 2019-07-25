@@ -13,10 +13,11 @@ import cs.nmsu.edu.csdemo.RstarTree.RTree;
 public class SeparateRealData {
 	int dimension;
 	Random r = new Random(System.nanoTime());
-	String path_base = "/home/gqxwolf/mydata/DemoProject/data/"; // the folder that stores the bus and points of
+	String homepath = System.getProperty("user.home");
+	String path_base = homepath+"/mydata/DemoProject/data/"; // the folder that stores the bus and points of
 																	// interest data
 	String poi_data = path_base + "IOP_data";
-	String tree_path = "/home/gqxwolf/mydata/DemoProject/data/real_tree.rtr"; // the place of the Rtree file
+	String tree_path = homepath+"/mydata/DemoProject/data/real_tree.rtr"; // the place of the Rtree file
 	String[] cities = new String[] { "New York", "San Francisco", "Los Angeles" };
 	String[] abbr_cities = new String[] { "NY", "SF", "LA" };
 	String[] p_types = new String[] { "food", "lodging", "restaurant" };
@@ -57,11 +58,11 @@ public class SeparateRealData {
 			this.max_id = 0;
 			long counter = 0;
 
-			File file = new File("/home/gqxwolf/mydata/DemoProject/data/staticNode_real_" + abbr_city + ".txt"); // store
+			File file = new File(homepath+"/mydata/DemoProject/data/staticNode_real_" + abbr_city + ".txt"); // store
 																													// the
 			// hotel
 			// information
-			String t_path = "/home/gqxwolf/mydata/DemoProject/data/real_tree_" + abbr_city + ".rtr";
+			String t_path = homepath+"/mydata/DemoProject/data/real_tree_" + abbr_city + ".rtr";
 			RTree rt = new RTree(t_path, Constants.BLOCKLENGTH, Constants.CACHESIZE, dimension);
 
 			if (file.exists()) {
@@ -70,11 +71,11 @@ public class SeparateRealData {
 
 			for (String type : p_types) {
 				String path = this.poi_data + "/outfilename_" + type + "_" + city;
-				String tree_type_path = "/home/gqxwolf/mydata/DemoProject/data/real_tree_" + abbr_city +"_"+type +".rtr";
+				String tree_type_path = homepath+"/mydata/DemoProject/data/real_tree_" + abbr_city +"_"+type +".rtr";
 				RTree type_rt = new RTree(tree_type_path, Constants.BLOCKLENGTH, Constants.CACHESIZE, dimension);
 				
 				// store the separate type data file
-				File type_file = new File("/home/gqxwolf/mydata/DemoProject/data/staticNode_real_" + abbr_city +"_"+type+ ".txt"); 
+				File type_file = new File(homepath+"/mydata/DemoProject/data/staticNode_real_" + abbr_city +"_"+type+ ".txt"); 
 				FileWriter type_fw = null;
 				BufferedWriter type_bw = null;
 				

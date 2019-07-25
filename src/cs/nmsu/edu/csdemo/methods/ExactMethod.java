@@ -354,7 +354,7 @@ public class ExactMethod {
 			long rt = System.currentTimeMillis();
 			Node startNode = nearestNetworkNode(lat, lng);
 
-			myNode s = new myNode(queryD, startNode.getId(), -1, n);
+			myNode s = new myNode(lat,lng, startNode.getId(), -1, n);
 //            System.out.println(GoogleMaps.distanceInMeters(queryD.location[0], queryD.location[1], s.locations[0], s.locations[1]));
 
 			myNodePriorityQueue mqueue = new myNodePriorityQueue();
@@ -366,17 +366,6 @@ public class ExactMethod {
 
 				myNode v = mqueue.pop();
 				v.inqueue = false;
-//				System.out.println(v.id+"  "+v.skyPaths.size());
-
-//				int aa = 0;
-//				for (path p : v.skyPaths) {
-//					if (!p.expaned) {
-//						aa++;
-//					}
-//				}
-////				if (aa != 0) {
-//					System.out.println(v.id + " " + aa);
-////				}
 
 				counter++;
 
@@ -393,7 +382,7 @@ public class ExactMethod {
 							if (this.tmpStoreNodes.containsKey(np.endNode)) {
 								next_n = tmpStoreNodes.get(np.endNode);
 							} else {
-								next_n = new myNode(queryD, np.endNode, -1, n);
+								next_n = new myNode(lat,lng, np.endNode, -1, n);
 								this.tmpStoreNodes.put(next_n.id, next_n);
 							}
 
@@ -428,7 +417,7 @@ public class ExactMethod {
 //                    if (!p.rels.isEmpty()) {
 					long ats = System.nanoTime();
 
-					boolean f = addToSkylineResult(p, sNodes);
+					boolean f = addToSkylineResult(p, sNodes); //TODO: create new addToSkylineResult method
 
 					addResult_rt += System.nanoTime() - ats;
 //                    }

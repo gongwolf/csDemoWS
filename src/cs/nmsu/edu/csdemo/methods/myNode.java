@@ -35,13 +35,11 @@ public class myNode {
 	}
 	
 	
-	public myNode(double lat, double lng, double distance_threshold,connector n) {
-		this.node = this.id = -1;
+	public myNode(double lat, double lng, long current_id, double distance_threshold,connector n) {
+		this.node = this.id = current_id;
 		this.locations = new double[2];
 		skyPaths = new ArrayList<>();
-		this.locations[0]=lat;
-		this.locations[1]=lng;
-		
+		setLocations(lat,lng,n);		
 		if (distance_threshold != -1 && this.distance_q <= distance_threshold) {
 			path dp = new path(this,n);
 			this.skyPaths.add(dp);
@@ -77,6 +75,16 @@ public class myNode {
 //            this.distance_q = Math.sqrt(Math.pow(locations[0] - queryNode.location[0], 2) + Math.pow(locations[1] - queryNode.location[1], 2));
 			this.distance_q = GoogleMaps.distanceInMeters(locations[0], locations[1], queryNode.location[0],
 					queryNode.location[1]);
+			tx.success();
+		}
+	}
+	
+	public void setLocations(double lat,double lng,connector n) {
+		try (Transaction tx = n.graphDB.beginTx()) {
+			locations[0] = (double) n.graphDB.getNodeById(this.id).getProperty("lat");
+			locations[1] = (double) n.graphDB.getNodeById(this.id).getProperty("log");
+//            this.distance_q = Math.sqrt(Math.pow(locations[0] - queryNode.location[0], 2) + Math.pow(locations[1] - queryNode.location[1], 2));
+			this.distance_q = GoogleMaps.distanceInMeters(locations[0], locations[1], lat,lng);
 			tx.success();
 		}
 	}
