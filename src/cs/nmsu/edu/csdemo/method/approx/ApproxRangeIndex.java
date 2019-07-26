@@ -158,15 +158,17 @@ public class ApproxRangeIndex{
 
 	        int visited_bus_stop = 0;
 	        try (Transaction tx = n.graphDB.beginTx()) {
-
-
 	            long rt = System.currentTimeMillis();
-
-	            myNode s = new myNode(queryD, startNode_id, this.distance_threshold,n);
 	            myNodePriorityQueue mqueue = new myNodePriorityQueue();
-	            mqueue.add(s);
-
-	            this.tmpStoreNodes.put(s.id, s);
+	            
+	            HashSet<Long> nodesInRange = nearestNetworkNodeInRange(queryD,n);
+	            
+	            for(long sid: nodesInRange) {
+		            myNode s = new myNode(queryD, sid, this.distance_threshold,n);
+		            mqueue.add(s);
+		            this.tmpStoreNodes.put(s.id, s);
+	            }
+	            
 
 	            while (!mqueue.isEmpty()) {
 
@@ -280,10 +282,8 @@ public class ApproxRangeIndex{
 	        System.out.println(sb.toString());
 	    }
 	    
-	    
-	    
 	    public void baseline(double lat, double lng) {
-	        long startNode_id = nearestNetworkNode(lat,lng);
+//	        long startNode_id = nearestNetworkNode(lat,lng);
 
 	        this.tmpStoreNodes.clear();
 	        long r1 = System.currentTimeMillis();
@@ -361,11 +361,17 @@ public class ApproxRangeIndex{
 	        int visited_bus_stop = 0;
 	        try (Transaction tx = n.graphDB.beginTx()) {
 	            long rt = System.currentTimeMillis();
-	            myNode s = new myNode(lat, lng, startNode_id, this.distance_threshold,n);
 	            myNodePriorityQueue mqueue = new myNodePriorityQueue();
-	            mqueue.add(s);
+	            
+	            HashSet<Long> nodesInRange = nearestNetworkNodeInRange(lat, lng ,n );
+	            
+	            for(long sid: nodesInRange) {
+		            myNode s = new myNode(lat, lng, sid, this.distance_threshold,n);
+//		            System.out.println(s);
+		            mqueue.add(s);
+		            this.tmpStoreNodes.put(s.id, s);
+	            }
 
-	            this.tmpStoreNodes.put(s.id, s);
 
 	            while (!mqueue.isEmpty()) {
 
@@ -462,11 +468,6 @@ public class ApproxRangeIndex{
 
 	        for (Result r : sortedList) {
 	            this.finalDatas.add(r.end.getPlaceId());
-//	            if (r.p != null) {
-//	                for (Long nn : r.p.nodes) {
-//	                    final_bus_stops.add(nn);
-//	                }
-//	            }
 	        }
 
 
@@ -646,8 +647,8 @@ public class ApproxRangeIndex{
 	                double lat = (double) n.getProperty("lat");
 	                double log = (double) n.getProperty("log");
 
-	                double temp_distz = Math.sqrt(Math.pow(lat - queryD.location[0], 2) + Math.pow(log - queryD.location[1], 2));
-//	                double temp_distz = GoogleMaps.distanceInMeters(lat, log, queryD.location[0], queryD.location[1]);
+//	                double temp_distz = Math.sqrt(Math.pow(lat - queryD.location[0], 2) + Math.pow(log - queryD.location[1], 2));
+	                double temp_distz = GoogleMaps.distanceInMeters(lat, log, queryD.location[0], queryD.location[1]);
 	                if (distz > temp_distz) {
 	                    nn_node = n;
 	                    distz = temp_distz;
@@ -671,8 +672,39 @@ public class ApproxRangeIndex{
 	    }
 	    
 	    
-	    public long nearestNetworkNode(double q_lat, double q_lng) {
+	    public HashSet<Long> nearestNetworkNodeInRange(Data queryD, connector connector) {	    	
+	    	HashSet<Long> nodeIDinRange = new HashSet<>();
 
+	        Node nn_node = null;
+	        double distz = Double.MAX_VALUE;
+	        int counter_in_range = 0;
+
+	        try (Transaction tx = connector.graphDB.beginTx()) {
+	            ResourceIterable<Node> iter = connector.graphDB.getAllNodes();
+	            for (Node n : iter) {
+	                double lat = (double) n.getProperty("lat");
+	                double log = (double) n.getProperty("log");
+
+//	                double temp_distz = Math.sqrt(Math.pow(lat - queryD.location[0], 2) + Math.pow(log - queryD.location[1], 2));
+	                double temp_distz = GoogleMaps.distanceInMeters(lat, log, queryD.location[0], queryD.location[1]);
+	                if (distz > temp_distz && temp_distz <= this.distance_threshold) {
+	                    nn_node = n;
+	                    distz = temp_distz;
+	                    nodeIDinRange.add(n.getId());
+	                    counter_in_range++;
+	                }
+	            }
+
+	            tx.success();
+	        }
+
+
+//	        System.out.println(counter_in_range + " bus stations within hotel " + this.distance_threshold);
+	        return nodeIDinRange;
+	    }
+	    
+	    
+	    public long nearestNetworkNode(double q_lat, double q_lng) {
 	        Node nn_node = null;
 	        double distz = Double.MAX_VALUE;
 	        int counter_in_range = 0;
@@ -686,8 +718,8 @@ public class ApproxRangeIndex{
 	                double lat = (double) n.getProperty("lat");
 	                double lng = (double) n.getProperty("log");
 
-	                double temp_distz = Math.sqrt(Math.pow(lat - q_lat, 2) + Math.pow(lng - q_lng, 2));
-//	                double temp_distz = GoogleMaps.distanceInMeters(lat, log, queryD.location[0], queryD.location[1]);
+//	                double temp_distz = Math.sqrt(Math.pow(lat - q_lat, 2) + Math.pow(lng - q_lng, 2));
+	                double temp_distz = GoogleMaps.distanceInMeters(lat, lng, q_lat, q_lng);
 	                if (distz > temp_distz) {
 	                    nn_node = n;
 	                    distz = temp_distz;
@@ -705,6 +737,36 @@ public class ApproxRangeIndex{
 
 	        conn.shutdownDB();
 	        return nn_node.getId();
+	    }
+	    
+	    
+	    public HashSet<Long> nearestNetworkNodeInRange(double q_lat, double q_lng, connector connector) {
+	    	HashSet<Long> nodeIDinRange = new HashSet<>();
+
+	        Node nn_node = null;
+	        double distz = Double.MAX_VALUE;
+	        int counter_in_range = 0;
+
+	        try (Transaction tx = connector.graphDB.beginTx()) {
+
+	            ResourceIterable<Node> iter = connector.graphDB.getAllNodes();
+	            for (Node n : iter) {
+	                double lat = (double) n.getProperty("lat");
+	                double lng = (double) n.getProperty("log");
+
+//	                double temp_distz = Math.sqrt(Math.pow(lat - q_lat, 2) + Math.pow(lng - q_lng, 2));
+	                double temp_distz = GoogleMaps.distanceInMeters(lat, lng, q_lat, q_lng);
+	                if (distz > temp_distz && temp_distz <= this.distance_threshold) {
+	                    nn_node = n;
+	                    distz = temp_distz;
+	                    counter_in_range++;
+	                    nodeIDinRange.add(n.getId());
+	                }
+	            }
+	            tx.success();
+	        }
+
+	        return nodeIDinRange;
 	    }
 
 

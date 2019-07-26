@@ -161,62 +161,58 @@ public class ExactMethod {
 
 			long rt = System.currentTimeMillis();
 			Node startNode = nearestNetworkNode(queryD);
+			long numberofNodes = n.getNumberofNodes();
+			while(startNode != null) {
+//				System.out.println(startNode.getId()+"   ----->   "+ this.tmpStoreNodes.size() + "/"+numberofNodes);
+				myNode s = new myNode(queryD, startNode.getId(), -1, n);
+				myNodePriorityQueue mqueue = new myNodePriorityQueue();
+				mqueue.add(s);
 
-			myNode s = new myNode(queryD, startNode.getId(), -1, n);
-//            System.out.println(GoogleMaps.distanceInMeters(queryD.location[0], queryD.location[1], s.locations[0], s.locations[1]));
+				this.tmpStoreNodes.put(s.id, s);
 
-			myNodePriorityQueue mqueue = new myNodePriorityQueue();
-			mqueue.add(s);
+				while (!mqueue.isEmpty()) {
 
-			this.tmpStoreNodes.put(s.id, s);
+					myNode v = mqueue.pop();
+					v.inqueue = false;
+					
+					counter++;
 
-			while (!mqueue.isEmpty()) {
-
-				myNode v = mqueue.pop();
-				v.inqueue = false;
-//				System.out.println(v.id+"  "+v.skyPaths.size());
-
-//				int aa = 0;
-//				for (path p : v.skyPaths) {
-//					if (!p.expaned) {
-//						aa++;
-//					}
-//				}
-////				if (aa != 0) {
-//					System.out.println(v.id + " " + aa);
-////				}
-
-				counter++;
-
-				for (int i = 0; i < v.skyPaths.size(); i++) {
-					path p = v.skyPaths.get(i);
-					if (!p.expaned) {
-						p.expaned = true;
-						long ee = System.nanoTime();
-						ArrayList<path> new_paths = p.expand(n);
-						expasion_rt += (System.nanoTime() - ee);
-						for (path np : new_paths) {
-//                            if (!np.hasCycle()) {
-							myNode next_n;
-							if (this.tmpStoreNodes.containsKey(np.endNode)) {
-								next_n = tmpStoreNodes.get(np.endNode);
-							} else {
-								next_n = new myNode(queryD, np.endNode, -1, n);
-								this.tmpStoreNodes.put(next_n.id, next_n);
-							}
-
-							// lemma 2
-							if (!(this.tmpStoreNodes.get(np.startNode).distance_q > next_n.distance_q)) {
-								if (next_n.addToSkyline(np) && !next_n.inqueue) {
-									mqueue.add(next_n);
-									next_n.inqueue = true;
+					for (int i = 0; i < v.skyPaths.size(); i++) {
+						path p = v.skyPaths.get(i);
+						if (!p.expaned) {
+							p.expaned = true;
+							long ee = System.nanoTime();
+							ArrayList<path> new_paths = p.expand(n);
+							expasion_rt += (System.nanoTime() - ee);
+							for (path np : new_paths) {
+//	                            if (!np.hasCycle()) {
+								myNode next_n;
+								if (this.tmpStoreNodes.containsKey(np.endNode)) {
+									next_n = tmpStoreNodes.get(np.endNode);
+								} else {
+									next_n = new myNode(queryD, np.endNode, -1, n);
+									this.tmpStoreNodes.put(next_n.id, next_n);
 								}
+
+								// lemma 2
+								if (!(this.tmpStoreNodes.get(np.startNode).distance_q > next_n.distance_q)) {
+									if (next_n.addToSkyline(np) && !next_n.inqueue) {
+										mqueue.add(next_n);
+										next_n.inqueue = true;
+									}
+								}
+//	                            }
 							}
-//                            }
 						}
 					}
 				}
+				
+				startNode = nearestNetworkNode(queryD);
 			}
+			
+			
+//			System.out.println("--------------------------------------------------");
+			
 
 			long exploration_rt = System.currentTimeMillis() - rt;
 //            System.out.println("expansion finished " + exploration_rt);
@@ -224,7 +220,13 @@ public class ExactMethod {
 			long tt_sl = 0;
 
 //            hotels_scope = new HashMap<>();
+			int addtocounter=0;
 			for (Map.Entry<Long, myNode> entry : tmpStoreNodes.entrySet()) {
+//				if(addtocounter%200==0) {
+//					System.out.println(addtocounter+"............................................");
+//				}
+//				addtocounter++;
+				
 				sk_counter += entry.getValue().skyPaths.size();
 				myNode my_n = entry.getValue();
 
@@ -361,59 +363,57 @@ public class ExactMethod {
 
 			long rt = System.currentTimeMillis();
 			Node startNode = nearestNetworkNode(lat, lng);
+			long numberofNodes = n.getNumberofNodes();
 
-			myNode s = new myNode(lat,lng, startNode.getId(), -1, n);
-//			System.out.println(s.distance_q+" "+s.id+" "+s.node+" "+s.skyPaths.get(0));
+			while(startNode != null) {
+//				System.out.println(startNode.getId()+"   ----->   "+ this.tmpStoreNodes.size() + "/"+numberofNodes);
+				myNode s = new myNode(lat,lng, startNode.getId(), -1, n);
 
-//            System.out.println(GoogleMaps.distanceInMeters(queryD.location[0], queryD.location[1], s.locations[0], s.locations[1]));
+				myNodePriorityQueue mqueue = new myNodePriorityQueue();
+				mqueue.add(s);
+				this.tmpStoreNodes.put(s.id, s);
 
-			myNodePriorityQueue mqueue = new myNodePriorityQueue();
-			mqueue.add(s);
-			
-			ResourceIterable<Node> iter = this.graphdb.getAllNodes();
-			for (Node n_node : iter) {
-//				double n_lat = (double) n_node.getProperty("lat");
-//				double n_lng = (double) n_node.getProperty("log");
-				mqueue.add(new myNode(lat,lng,n_node.getId(),-1,n));
-				
-			}
-
-			this.tmpStoreNodes.put(s.id, s);
-
-			while (!mqueue.isEmpty()) {
-				myNode v = mqueue.pop();
-				v.inqueue = false;
-				counter++;
-				
-				for (int i = 0; i < v.skyPaths.size(); i++) {
-					path p = v.skyPaths.get(i);
-					if (!p.expaned) {
-						p.expaned = true;
-						long ee = System.nanoTime();
-						ArrayList<path> new_paths = p.expand(n);
-						expasion_rt += (System.nanoTime() - ee);
-						for (path np : new_paths) {
-//                            if (!np.hasCycle()) {
-							myNode next_n;
-							if (this.tmpStoreNodes.containsKey(np.endNode)) {
-								next_n = tmpStoreNodes.get(np.endNode);
-							} else {
-								next_n = new myNode(lat,lng, np.endNode, -1, n);
-								this.tmpStoreNodes.put(next_n.id, next_n);
-							}
-
-							// lemma 2
-							if (!(this.tmpStoreNodes.get(np.startNode).distance_q > next_n.distance_q)) {
-								if (next_n.addToSkyline(np) && !next_n.inqueue) {
-									mqueue.add(next_n);
-									next_n.inqueue = true;
+				while (!mqueue.isEmpty()) {
+					myNode v = mqueue.pop();
+					v.inqueue = false;
+					counter++;
+					
+					for (int i = 0; i < v.skyPaths.size(); i++) {
+						path p = v.skyPaths.get(i);
+						if (!p.expaned) {
+							p.expaned = true;
+							long ee = System.nanoTime();
+							ArrayList<path> new_paths = p.expand(n);
+							expasion_rt += (System.nanoTime() - ee);
+							for (path np : new_paths) {
+//	                            if (!np.hasCycle()) {
+								myNode next_n;
+								if (this.tmpStoreNodes.containsKey(np.endNode)) {
+									next_n = tmpStoreNodes.get(np.endNode);
+								} else {
+									next_n = new myNode(lat,lng, np.endNode, -1, n);
+									this.tmpStoreNodes.put(next_n.id, next_n);
 								}
+
+								// lemma 2
+								if (!(this.tmpStoreNodes.get(np.startNode).distance_q > next_n.distance_q)) {
+									if (next_n.addToSkyline(np) && !next_n.inqueue) {
+										mqueue.add(next_n);
+										next_n.inqueue = true;
+									}
+								}
+//	                            }
 							}
-//                            }
 						}
 					}
 				}
+				
+				startNode = nearestNetworkNode(lat, lng);
 			}
+			
+			
+//			System.out.println("------------------------------------------------------");
+			
 
 			long exploration_rt = System.currentTimeMillis() - rt;
 //            System.out.println("expansion finished " + exploration_rt);
@@ -421,7 +421,12 @@ public class ExactMethod {
 			long tt_sl = 0;
 
 //            hotels_scope = new HashMap<>();
+			int addtocounter=0;
 			for (Map.Entry<Long, myNode> entry : tmpStoreNodes.entrySet()) {
+//				if(addtocounter%200==0) {
+//					System.out.println(addtocounter+"............................................");
+//				}
+				addtocounter++;
 				sk_counter += entry.getValue().skyPaths.size();
 				myNode my_n = entry.getValue();
 
@@ -486,6 +491,7 @@ public class ExactMethod {
 		sb.append(" " + sNodes.size() + " " + sk_counter);
 
 		System.out.println(sb.toString());
+//		System.out.println("Exact Location Method Finished");
 
 	}
 	
@@ -567,8 +573,6 @@ public class ExactMethod {
 		this.read_data += (System.nanoTime() - d1 - d2 - dsad);
 		return flag;
 	}
-	
-	
 	
 	private boolean addToSkylineResultByLocation(double lat, double lng, path np, ArrayList<Data> d_list) {
 		this.add_counter++;
@@ -667,7 +671,7 @@ public class ExactMethod {
 				double log = (double) n.getProperty("log");
 
 				double temp_distz = (Math.pow(lat - queryD.location[0], 2) + Math.pow(log - queryD.location[1], 2));
-				if (distz > temp_distz) {
+				if (distz > temp_distz && !this.tmpStoreNodes.containsKey(n.getId())) {
 					nn_node = n;
 					distz = temp_distz;
 					this.nn_dist = distz;
@@ -677,10 +681,8 @@ public class ExactMethod {
 		}
 
 		this.nn_dist = distz;
-//        nn_dist = (int) Math.ceil(distz);
 		return nn_node;
 	}
-	
 	
 	public Node nearestNetworkNode(double q_lat, double q_lng) {
 		Node nn_node = null;
@@ -692,7 +694,7 @@ public class ExactMethod {
 				double log = (double) n.getProperty("log");
 
 				double temp_distz = (Math.pow(lat - q_lat, 2) + Math.pow(log - q_lng, 2));
-				if (distz > temp_distz) {
+				if (distz > temp_distz&& !this.tmpStoreNodes.containsKey(n.getId())) {
 					nn_node = n;
 					distz = temp_distz;
 					this.nn_dist = distz;

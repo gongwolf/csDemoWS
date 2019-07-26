@@ -8,6 +8,7 @@ import cs.nmsu.edu.csdemo.neo4jTools.connector;
 import cs.nmsu.edu.csdemo.tools.GoogleMaps;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class myNode {
 	public long id;
@@ -154,4 +155,13 @@ public class myNode {
 		// Compare the data members and return accordingly
 		return c.id == this.id;
 	}
+
+
+	@Override
+	public String toString() {
+		return "myNode [id=" + id + ", node=" + node + ", skyPaths=" + skyPaths + ", distance_q=" + distance_q
+				+ ", locations=" + Arrays.toString(locations) + ", inqueue=" + inqueue + "]";
+	}
+	
+	
 }
