@@ -66,9 +66,9 @@ public class QueryServices {
 
 		int isAIOP = isAInterestingOfPoint(city, lat, lng);
 		
-		if(isAIOP!=-1) {
-			return improvedExactQueryById(isAIOP,city);
-		}else {
+//		if(isAIOP!=-1) {
+//			return improvedExactQueryById(isAIOP,city);
+//		}else {
 			ExactMethod bm5 = new ExactMethod(city);
 			bm5.baseline(lat, lng);
 
@@ -81,7 +81,7 @@ public class QueryServices {
 			updateBeansNodeLocationInformation(result, city);
 			return Response.status(200).entity(result).header("Access-Control-Allow-Origin", "*").build();
 			
-		}
+//		}
 	}
 	
 	@Path("/improvedExactLocationType/{city}/{type}/{lat}/{lng}")
@@ -434,33 +434,32 @@ public class QueryServices {
 	/**Testing main function**/
 	public static void main(String args[]) {
 		QueryServices qs = new QueryServices();
-		qs.improvedExactQueryByLocation("NY", 40.9062324,-73.90143);
+		qs.improvedExactQueryByLocation("NY", 40.9052323,-73.9009833);
 		System.out.println("======================================================");
 		qs.improvedExactQueryById(5079, "NY");
-		
-		System.out.println("======================================================");
-		qs.improvedExactQueryByLocationType("NY", 40.9062324,-73.90143,"food");
-		System.out.println("======================================================");
-		qs.improvedExactQueryByIdType(5079, "NY","food");
-		
-		
-		System.out.println("======================================================");
-		qs.ApproxRangeIndexedQueryByLocation("NY", 40.9062324,-73.90143,850);
-		System.out.println("======================================================");
-		qs.ApproxRangeIndexedQueryById(5079, "NY",850);
-		System.out.println("======================================================");
-		qs.ApproxRangeIndexedQueryByLocationType("NY", 40.9062324,-73.90143,850,"food");
-		System.out.println("======================================================");
-		qs.ApproxRangeIndexedQueryByIdType(5079, "NY",850,"food");
-		
-		
-		System.out.println("======================================================");
-		qs.ApproxMixedIndexedQueryByLocation("NY", 40.9062324,-73.90143,850);
-		System.out.println("======================================================");
-		qs.ApproxMixedIndexedQueryById(5079, "NY",850);
-		System.out.println("======================================================");
-		qs.ApproxMixedIndexedQueryByLocationType("NY", 40.9062324,-73.90143,850,"food");
-		System.out.println("======================================================");
-		qs.ApproxMixedIndexedQueryByIdType(5079, "NY",850,"food");
+//		System.out.println("======================================================");
+//		qs.improvedExactQueryByLocationType("NY", 40.9062324,-73.90143,"food");
+//		System.out.println("======================================================");
+//		qs.improvedExactQueryByIdType(5079, "NY","food");
+//		
+//		
+//		System.out.println("======================================================");
+//		qs.ApproxRangeIndexedQueryByLocation("NY", 40.9062324,-73.90143,850);
+//		System.out.println("======================================================");
+//		qs.ApproxRangeIndexedQueryById(5079, "NY",850);
+//		System.out.println("======================================================");
+//		qs.ApproxRangeIndexedQueryByLocationType("NY", 40.9062324,-73.90143,850,"food");
+//		System.out.println("======================================================");
+//		qs.ApproxRangeIndexedQueryByIdType(5079, "NY",850,"food");
+//		
+//		
+//		System.out.println("======================================================");
+//		qs.ApproxMixedIndexedQueryByLocation("NY", 40.9062324,-73.90143,850);
+//		System.out.println("======================================================");
+//		qs.ApproxMixedIndexedQueryById(5079, "NY",850);
+//		System.out.println("======================================================");
+//		qs.ApproxMixedIndexedQueryByLocationType("NY", 40.9062324,-73.90143,850,"food");
+//		System.out.println("======================================================");
+//		qs.ApproxMixedIndexedQueryByIdType(5079, "NY",850,"food");
 	}
 }

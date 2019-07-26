@@ -324,7 +324,7 @@ public class ExactMethod {
 			Result r = new Result(lat,lng, d, c, null);
 			addToSkyline(r);
 		}
-		sb.append(this.sNodes.size() + " " + this.sky_hotel.size() + " " + this.skyPaths.size() + " ");
+		sb.append(this.sNodes.size() + " " + this.sky_hotel.size() + " #ofSkyline:" + this.skyPaths.size() + " ");
 		// find the minimum distance from query point to the skyline hotel that dominate non-skyline hotel cand_d
 		for (Data cand_d : sNodes) {
 			double h_to_h_dist = Double.MAX_VALUE;
@@ -339,7 +339,6 @@ public class ExactMethod {
 					}
 				}
 			}
-
 			dominated_checking.put(cand_d.getPlaceId(), h_to_h_dist);
 		}
 
@@ -364,20 +363,28 @@ public class ExactMethod {
 			Node startNode = nearestNetworkNode(lat, lng);
 
 			myNode s = new myNode(lat,lng, startNode.getId(), -1, n);
+//			System.out.println(s.distance_q+" "+s.id+" "+s.node+" "+s.skyPaths.get(0));
+
 //            System.out.println(GoogleMaps.distanceInMeters(queryD.location[0], queryD.location[1], s.locations[0], s.locations[1]));
 
 			myNodePriorityQueue mqueue = new myNodePriorityQueue();
 			mqueue.add(s);
+			
+			ResourceIterable<Node> iter = this.graphdb.getAllNodes();
+			for (Node n_node : iter) {
+//				double n_lat = (double) n_node.getProperty("lat");
+//				double n_lng = (double) n_node.getProperty("log");
+				mqueue.add(new myNode(lat,lng,n_node.getId(),-1,n));
+				
+			}
 
 			this.tmpStoreNodes.put(s.id, s);
 
 			while (!mqueue.isEmpty()) {
-
 				myNode v = mqueue.pop();
 				v.inqueue = false;
-
 				counter++;
-
+				
 				for (int i = 0; i < v.skyPaths.size(); i++) {
 					path p = v.skyPaths.get(i);
 					if (!p.expaned) {

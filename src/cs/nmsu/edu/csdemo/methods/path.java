@@ -88,8 +88,7 @@ public class path {
 	public ArrayList<path> expand(connector n) {
 		ArrayList<path> result = new ArrayList<>();
 		try (Transaction tx = n.graphDB.beginTx()) {
-			Iterable<Relationship> rels = n.graphDB.getNodeById(this.endNode).getRelationships(Line.Linked,
-					Direction.OUTGOING);
+			Iterable<Relationship> rels = n.graphDB.getNodeById(this.endNode).getRelationships(Line.Linked, Direction.OUTGOING);
 			Iterator<Relationship> rel_Iter = rels.iterator();
 			while (rel_Iter.hasNext()) {
 				Relationship rel = rel_Iter.next();
