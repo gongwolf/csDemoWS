@@ -433,13 +433,13 @@ public class QueryServices {
 	/**Testing main function**/
 	public static void main(String args[]) {
 		QueryServices qs = new QueryServices();
-		qs.improvedExactQueryByLocation("NY", 40.9062324,-73.90143);
+		qs.improvedExactQueryByLocation("SF", 40.9062324,-73.90143);
 		System.out.println("======================================================");
-		qs.improvedExactQueryById(5079, "NY");
-		System.out.println("======================================================");
-		qs.improvedExactQueryByLocationType("NY", 40.9062324,-73.90143,"food");
-		System.out.println("======================================================");
-		qs.improvedExactQueryByIdType(5079, "NY","food");
+		qs.improvedExactQueryById(5079, "SF");
+//		System.out.println("======================================================");
+//		qs.improvedExactQueryByLocationType("NY", 40.9062324,-73.90143,"food");
+//		System.out.println("======================================================");
+//		qs.improvedExactQueryByIdType(5079, "NY","food");
 		
 		
 //		System.out.println("======================================================");

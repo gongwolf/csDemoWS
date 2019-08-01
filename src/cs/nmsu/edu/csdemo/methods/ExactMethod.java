@@ -216,6 +216,7 @@ public class ExactMethod {
 
 			long exploration_rt = System.currentTimeMillis() - rt;
 //            System.out.println("expansion finished " + exploration_rt);
+			long graph_process_rt = System.currentTimeMillis() - s_sum;
 
 			long tt_sl = 0;
 
@@ -247,7 +248,7 @@ public class ExactMethod {
 			}
 
 			// time that is used to find the candidate objects, find the nearest objects,
-			sb.append(bbs_rt + "," + nn_rt + "," + exploration_rt + "," + (index_s / 1000000));
+			sb.append(bbs_rt + "," + nn_rt + "," + exploration_rt + "," + (index_s / 1000000)+", graph_process_rt:"+graph_process_rt);
 			tx.success();
 		}
 
@@ -354,6 +355,8 @@ public class ExactMethod {
 		long counter = 0;
 		long addResult_rt = 0;
 		long expasion_rt = 0;
+		
+		long iteration_rt = System.nanoTime(); 
 
 		try (Transaction tx = this.graphdb.beginTx()) {
 			db_time = System.currentTimeMillis() - db_time;
@@ -366,7 +369,10 @@ public class ExactMethod {
 			long numberofNodes = n.getNumberofNodes();
 
 			while(startNode != null) {
-//				System.out.println(startNode.getId()+"   ----->   "+ this.tmpStoreNodes.size() + "/"+numberofNodes);
+				
+				long last_iter_rt = System.nanoTime()-iteration_rt;
+				iteration_rt=System.nanoTime();
+				System.out.println(startNode.getId()+"   ----->   "+ this.tmpStoreNodes.size() + "/"+numberofNodes+"   Last Iteration Runing time:"+(last_iter_rt/1000000)+"ms");
 				myNode s = new myNode(lat,lng, startNode.getId(), -1, n);
 
 				myNodePriorityQueue mqueue = new myNodePriorityQueue();
@@ -412,20 +418,22 @@ public class ExactMethod {
 			}
 			
 			
-//			System.out.println("------------------------------------------------------");
+			System.out.println("------------------------------------------------------");
 			
 
 			long exploration_rt = System.currentTimeMillis() - rt;
 //            System.out.println("expansion finished " + exploration_rt);
+			
+			long graph_process_rt = System.currentTimeMillis() - r1;
 
 			long tt_sl = 0;
 
 //            hotels_scope = new HashMap<>();
 			int addtocounter=0;
 			for (Map.Entry<Long, myNode> entry : tmpStoreNodes.entrySet()) {
-//				if(addtocounter%200==0) {
-//					System.out.println(addtocounter+"............................................");
-//				}
+				if(addtocounter%200==0) {
+					System.out.println(addtocounter+"............................................");
+				}
 				addtocounter++;
 				sk_counter += entry.getValue().skyPaths.size();
 				myNode my_n = entry.getValue();
@@ -447,7 +455,7 @@ public class ExactMethod {
 			}
 
 			// time that is used to find the candidate objects, find the nearest objects,
-			sb.append(bbs_rt + "," + nn_rt + "," + exploration_rt + "," + (index_s / 1000000));
+			sb.append(bbs_rt + "," + nn_rt + "," + exploration_rt + "," + (index_s / 1000000)+", graph_process_rt:"+graph_process_rt);
 			tx.success();
 		}
 
@@ -502,9 +510,9 @@ public class ExactMethod {
 		this.add_counter++;
 		long r2a = System.nanoTime();
 
-		if (np.rels.isEmpty()) {
-			return false;
-		}
+//		if (np.rels.isEmpty()) {
+//			return false;
+//		}
 		if (np.isDummyPath()) {
 			return false;
 		}
@@ -578,9 +586,10 @@ public class ExactMethod {
 		this.add_counter++;
 		long r2a = System.nanoTime();
 
-		if (np.rels.isEmpty()) {
-			return false;
-		}
+//		if (np.rels.isEmpty()) {
+//			return false;
+//		}
+		
 		if (np.isDummyPath()) {
 			return false;
 		}

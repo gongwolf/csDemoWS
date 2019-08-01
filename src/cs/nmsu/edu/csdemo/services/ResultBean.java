@@ -36,15 +36,15 @@ public class ResultBean {
 		this.nodeIDs = new ArrayList<NodeBeans>();
 		this.relsIDs = new ArrayList<Long>();
 
-		if (r.p != null) {
-			this.relsIDs.addAll(r.p.rels);
-			
-			for (long nid : r.p.nodes) {
-				NodeBeans nbean = new NodeBeans();
-				nbean.setId(nid);
-				this.nodeIDs.add(nbean);
-			}
-		}
+//		if (r.p != null) {
+//			this.relsIDs.addAll(r.p.rels);
+//			
+//			for (long nid : r.p.nodes) {
+//				NodeBeans nbean = new NodeBeans();
+//				nbean.setId(nid);
+//				this.nodeIDs.add(nbean);
+//			}
+//		}
 
 		this.costs = r.costs;
 	}
