@@ -431,9 +431,10 @@ public class ExactMethod {
 //            hotels_scope = new HashMap<>();
 			int addtocounter=0;
 			for (Map.Entry<Long, myNode> entry : tmpStoreNodes.entrySet()) {
-				if(addtocounter%200==0) {
-					System.out.println(addtocounter+"............................................");
-				}
+//				if(addtocounter%200==0) {
+//				}
+				
+				long one_iter_rt = System.currentTimeMillis();
 				addtocounter++;
 				sk_counter += entry.getValue().skyPaths.size();
 				myNode my_n = entry.getValue();
@@ -452,6 +453,9 @@ public class ExactMethod {
 //                    }
 				}
 
+				one_iter_rt = System.currentTimeMillis()-one_iter_rt;
+				System.out.println("size of skyline of Node "+ entry.getKey()+" is "+ entry.getValue().skyPaths.size()+" used "+ one_iter_rt+ "ms #### "+addtocounter+"............................................");
+				one_iter_rt= System.currentTimeMillis();
 			}
 
 			// time that is used to find the candidate objects, find the nearest objects,
