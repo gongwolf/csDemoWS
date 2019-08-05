@@ -40,7 +40,12 @@ public class Index {
 	public Index(String city, double distance_threshold) {
 //		this.distance_threshold = 0.0105;
 		this.distance_threshold = distance_threshold;
-		this.home_folder = base + "/" + city + "_index_"+(int)distance_threshold+"/";
+		if(distance_threshold!= -1) {
+			this.home_folder = base + "/" + city + "_index_"+(int)distance_threshold+"/";
+		}else {
+			this.home_folder = base + "/" + city + "_index_all/";
+		}
+		
 		this.graphPath = System.getProperty("user.home") + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
 		this.treePath = System.getProperty("user.home") + "/mydata/DemoProject/data/real_tree_" + city + ".rtr";
 		this.dataPath = System.getProperty("user.home") + "/mydata/DemoProject/data/staticNode_real_" + city + ".txt";
@@ -187,6 +192,7 @@ public class Index {
 						// ++
 						if ((this.pagesize_list / 4) < (records + 1)) {
 							page_list_number++;
+							records=0;
 						}
 					}
 
@@ -198,7 +204,15 @@ public class Index {
 
 					page_list_number++;
 					tx.success();
+					
+					
+					if(d_size>0) {
+						System.out.println(node_id+"     "+d_size+"   "+d_size*4+"/1024="+(d_size*4/1024+1)+"pages  "+  page_list_number+"  "+records);
+					}
 				}
+				
+//				System.exit(0);
+
 			}
 
 			header_f.close();
@@ -297,13 +311,21 @@ public class Index {
     }
 
 	public static void main(String[] args) {
-		for (String cy : constants.cityList) {
-			System.out.println("Builing index for city: "+cy);
-			Index idx = new Index(cy, 850);
-			idx.buildIndex(true);
-			System.out.println("Finished Index Build for city: "+cy);
-			System.out.println("====================================================");
-		}
+//		for (String cy : constants.cityList) {
+//			System.out.println("Builing index for city: "+cy);
+//			Index idx = new Index(cy, 2000);
+//			idx.buildIndex(true);
+//			System.out.println("Finished Index Build for city: "+cy);
+//			System.out.println("====================================================");
+//		}
+
+		String cy = "LA";
+		System.out.println("Builing index for city: "+ cy);
+		Index idx = new Index(cy, -1);
+		idx.buildIndex(true);
+		System.out.println("Finished Index Build for city: "+cy);
+		System.out.println("====================================================");
+
 	}
 
 	public long getLineNumbers() {
