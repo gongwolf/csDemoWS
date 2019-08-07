@@ -11,9 +11,10 @@ public class constants {
 	public static HashMap<Long, Long> accessedNodes = new HashMap<>();
 	public static HashMap<Long, Long> accessedEdges = new HashMap<>();
 	
-//	public static HashSet<String> cityList = new HashSet<>(Arrays.asList("SF", "LA", "NY"));
-	public static HashSet<String> cityList = new HashSet<>(Arrays.asList("SF"));
+	public static HashSet<String> cityList = new HashSet<>(Arrays.asList("SF", "LA", "NY"));
 	public static HashSet<String> typeList = new HashSet<>(Arrays.asList("food", "lodging", "restaurant"));
+
+//	public static HashSet<Double> index_range_list = new HashSet<>(Arrays.asList(-1,500,550,600,650));
 
 	public static void print(double[] costs) {
 		System.out.print("[");

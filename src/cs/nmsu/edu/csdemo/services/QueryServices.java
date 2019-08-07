@@ -18,6 +18,7 @@ import cs.nmsu.edu.csdemo.RstarTree.Data;
 import cs.nmsu.edu.csdemo.method.approx.ApproxMixedIndex;
 import cs.nmsu.edu.csdemo.method.approx.ApproxRangeIndex;
 import cs.nmsu.edu.csdemo.methods.ExactMethod;
+import cs.nmsu.edu.csdemo.methods.ExactMethodIndex;
 import cs.nmsu.edu.csdemo.methods.Result;
 import cs.nmsu.edu.csdemo.methods.constants;
 import cs.nmsu.edu.csdemo.neo4jTools.connector;
@@ -54,7 +55,7 @@ public class QueryServices {
 //		return result;
 		return Response.status(200).entity(result).header("Access-Control-Allow-Origin", "*").build();
 	}
-
+	
 	@Path("/improvedExactLocation/{city}/{lat}/{lng}")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
@@ -113,7 +114,7 @@ public class QueryServices {
 			return Response.status(200).entity(result).header("Access-Control-Allow-Origin", "*").build();	
 		}
 	}
-	
+		
 	@Path("/improvedExact/{city}/{type}/{id}")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
@@ -140,6 +141,118 @@ public class QueryServices {
 		}
 
 		updateBeansNodeLocationInformation(result, city);
+		return Response.status(200).entity(result).header("Access-Control-Allow-Origin", "*").build();
+	}
+	
+	
+	/**Group of exact methods with Index**/
+	@Path("/improvedExactLocationTypeIndex/{city}/{type}/{lat}/{lng}")
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response improvedExactQueryByLocationTypeIndex(@PathParam("city") String city, @PathParam("lat") double lat, @PathParam("lng") double lng, @PathParam("type") String type) {
+
+		if (!constants.cityList.contains(city)) {
+			return null;
+		}
+
+		int isAIOP = isAInterestingOfPoint(city, lat, lng);
+		
+		if(isAIOP!=-1) {
+			System.out.println(isAIOP+"     "+city);
+			return improvedExactQueryByIdTypeIndex(isAIOP,city,type);
+		}else {
+			ExactMethodIndex bm5 = new ExactMethodIndex(city,type);
+			bm5.baselineWihtIndex(lat, lng);
+
+			ArrayList<ResultBean> result = new ArrayList<>();
+			for (Result r : bm5.skyPaths) {
+				ResultBean rbean = new ResultBean(r);
+				result.add(rbean);
+			}
+
+			updateBeansNodeLocationInformation(result, city);
+//			return result;
+			return Response.status(200).entity(result).header("Access-Control-Allow-Origin", "*").build();	
+		}
+	}
+
+	@Path("/improvedExactIndex/{city}/{type}/{id}")
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response improvedExactQueryByIdTypeIndex(@PathParam("id") int queryPlaceId, @PathParam("city") String city, @PathParam("type") String type) {
+
+		if (!constants.cityList.contains(city)) {
+			return null;
+		}
+
+		if (!constants.typeList.contains(type)) {
+			return null;
+		}
+
+		ExactMethodIndex bm5 = new ExactMethodIndex(city, type);
+		Data queryD = bm5.getDataById(queryPlaceId);
+		System.out.println(queryD);
+		bm5.baselineIndex(queryD);
+
+		ArrayList<ResultBean> result = new ArrayList<>();
+		for (Result r : bm5.skyPaths) {
+			ResultBean rbean = new ResultBean(r);
+			result.add(rbean);
+		}
+
+		updateBeansNodeLocationInformation(result, city);
+		return Response.status(200).entity(result).header("Access-Control-Allow-Origin", "*").build();
+	}
+	
+		
+	@Path("/improvedExactLocationIndex/{city}/{lat}/{lng}")
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response improvedExactQueryByLocationIndex(@PathParam("city") String city, @PathParam("lat") double lat, @PathParam("lng") double lng) {
+
+		if (!constants.cityList.contains(city)) {
+			return null;
+		}
+
+		int isAIOP = isAInterestingOfPoint(city, lat, lng);
+		
+		if(isAIOP!=-1) {
+			return improvedExactQueryByIdIndex(isAIOP,city);
+		}else {
+			ExactMethodIndex bm5 = new ExactMethodIndex(city);
+			bm5.baselineWihtIndex(lat, lng);
+
+			ArrayList<ResultBean> result = new ArrayList<>();
+			for (Result r : bm5.skyPaths) {
+				ResultBean rbean = new ResultBean(r);
+				result.add(rbean);
+			}
+
+			updateBeansNodeLocationInformation(result, city);
+			return Response.status(200).entity(result).header("Access-Control-Allow-Origin", "*").build();
+			
+		}
+	}
+
+	public Response improvedExactQueryByIdIndex(@PathParam("id") int queryPlaceId, @PathParam("city") String city) {
+
+		if (!constants.cityList.contains(city)) {
+			return null;
+		}
+
+		ExactMethodIndex bm5 = new ExactMethodIndex(city);
+		Data queryD = bm5.getDataById(queryPlaceId);
+		System.out.println(queryD);
+		bm5.baselineIndex(queryD);
+
+		ArrayList<ResultBean> result = new ArrayList<>();
+		for (Result r : bm5.skyPaths) {
+			ResultBean rbean = new ResultBean(r);
+			result.add(rbean);
+		}
+
+		updateBeansNodeLocationInformation(result, city);
+//		return result;
 		return Response.status(200).entity(result).header("Access-Control-Allow-Origin", "*").build();
 	}
 
@@ -433,15 +546,19 @@ public class QueryServices {
 	/**Testing main function**/
 	public static void main(String args[]) {
 		QueryServices qs = new QueryServices();
-		qs.improvedExactQueryByLocation("SF", 40.9062324,-73.90143);
-		System.out.println("======================================================");
-		qs.improvedExactQueryById(5079, "SF");
+		qs.improvedExactQueryByLocationIndex("NY", 40.9062324,-73.90143);
+//		qs.improvedExactQueryByLocation("NY", 40.9062324,-73.90143);
+//		System.out.println("======================================================");
+//		qs.improvedExactQueryById(5079, "NY");
+//		qs.improvedExactQueryByIdIndex(5079, "NY");
 //		System.out.println("======================================================");
 //		qs.improvedExactQueryByLocationType("NY", 40.9062324,-73.90143,"food");
+//		qs.improvedExactQueryByLocationTypeIndex("NY", 40.9062324,-73.90143,"food");
 //		System.out.println("======================================================");
 //		qs.improvedExactQueryByIdType(5079, "NY","food");
-		
-		
+//		qs.improvedExactQueryByIdTypeIndex(5079, "NY","food");
+//
+//		
 //		System.out.println("======================================================");
 //		qs.ApproxRangeIndexedQueryByLocation("NY", 40.9062324,-73.90143,850);
 //		System.out.println("======================================================");
@@ -450,8 +567,8 @@ public class QueryServices {
 //		qs.ApproxRangeIndexedQueryByLocationType("NY", 40.9062324,-73.90143,850,"food");
 //		System.out.println("======================================================");
 //		qs.ApproxRangeIndexedQueryByIdType(5079, "NY",850,"food");
-//		
-//		
+////		
+////		
 //		System.out.println("======================================================");
 //		qs.ApproxMixedIndexedQueryByLocation("NY", 40.9062324,-73.90143,850);
 //		System.out.println("======================================================");

@@ -9,11 +9,12 @@ import org.neo4j.graphdb.Transaction;
 import cs.nmsu.edu.csdemo.RstarTree.Data;
 import cs.nmsu.edu.csdemo.neo4jTools.connector;
 import cs.nmsu.edu.csdemo.tools.GoogleMaps;
+import cs.nmsu.edu.csdemo.tools.Index;
 
 import java.io.*;
 import java.util.*;
 
-public class ExactMethod {
+public class ExactMethodIndex {
 	public double nn_dist; // the euclidean distance from the query hotel to the bus stop.
 	public ArrayList<path> qqqq = new ArrayList<>();
 	public ArrayList<Result> skyPaths = new ArrayList<>();
@@ -44,8 +45,9 @@ public class ExactMethod {
 	private long sky_add_result_counter; // how many results are taken the addtoskyline operation
 	private Data queryD;
 	private long d_list_num = 0;
+	private String city = "";
 
-	public ExactMethod(int graph_size, String degree, double range, int hotels_num) {
+	public ExactMethodIndex(int graph_size, String degree, double range, int hotels_num) {
 		this.range = range;
 		this.hotels_num = hotels_num;
 		r = new Random(System.nanoTime());
@@ -58,7 +60,8 @@ public class ExactMethod {
 				+ this.degree + "_" + range + "_" + hotels_num + ".txt";
 	}
 
-	public ExactMethod(String city) {
+	public ExactMethodIndex(String city) {
+		this.city = city;
 		r = new Random(System.nanoTime());
 		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
 		this.treePath = home_folder + "/mydata/DemoProject/data/real_tree_" + city + ".rtr";
@@ -67,7 +70,8 @@ public class ExactMethod {
 		System.out.println("There are " + this.hotels_num + " in the city " + city);
 	}
 
-	public ExactMethod(String city, String type) {
+	public ExactMethodIndex(String city, String type) {
+		this.city = city;
 		r = new Random(System.nanoTime());
 		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
 		this.treePath = home_folder + "/mydata/DemoProject/data/real_tree_" + city +"_" + type + ".rtr";
@@ -76,13 +80,13 @@ public class ExactMethod {
 		System.out.println("There are " + this.hotels_num +" "+ type +" in the city " + city);
 	}
 
-	public ExactMethod(String tree, String data, String graph) {
+	public ExactMethodIndex(String tree, String data, String graph) {
 		this.graphPath = graph;
 		this.treePath = tree;
 		this.dataPath = data;
 	}
-
-	public void baseline(Data queryD) {
+		
+	public void baselineIndex(Data queryD) {
 		this.queryD = queryD;
 		StringBuffer sb = new StringBuffer();
 		sb.append(queryD.getPlaceId() + " ");
@@ -222,6 +226,7 @@ public class ExactMethod {
 
 //            hotels_scope = new HashMap<>();
 			int addtocounter=0;
+			Index idx = new Index(city,-1);
 			for (Map.Entry<Long, myNode> entry : tmpStoreNodes.entrySet()) {
 //				if(addtocounter%200==0) {
 //					System.out.println(addtocounter+"............................................");
@@ -234,17 +239,18 @@ public class ExactMethod {
 				long t_index_s = System.nanoTime();
 
 				index_s += (System.nanoTime() - t_index_s);
+				ArrayList<Data> d_list = idx.read_d_list_from_disk(my_n.id);
+				if(d_list!=null) {
+					for (path p : my_n.skyPaths) {
+//	                    if (!p.rels.isEmpty()) {
+						long ats = System.nanoTime();
 
-				for (path p : my_n.skyPaths) {
-//                    if (!p.rels.isEmpty()) {
-					long ats = System.nanoTime();
+						boolean f = addToSkylineResult(p, d_list);
 
-					boolean f = addToSkylineResult(p, sNodes);
-
-					addResult_rt += System.nanoTime() - ats;
-//                    }
+						addResult_rt += System.nanoTime() - ats;
+//	                    }
+					}
 				}
-
 			}
 
 			// time that is used to find the candidate objects, find the nearest objects,
@@ -295,8 +301,8 @@ public class ExactMethod {
 
 	}
 
-	
-	public void baseline(double lat, double lng) {
+	public void baselineWihtIndex(double lat, double lng) {
+		System.out.println("call baselineWihtIndex function");
 		StringBuffer sb = new StringBuffer();
 		sb.append("[" + lat + "," + lng+ "]" + " ");
 
@@ -304,7 +310,6 @@ public class ExactMethod {
 
 		// find the skyline hotels of the whole dataset.
 		sky.findSkyline(lat, lng);
-
 		this.sky_hotel = new ArrayList<>(sky.sky_hotels);
 
 		long s_sum = System.currentTimeMillis();
@@ -331,7 +336,6 @@ public class ExactMethod {
 		// find the minimum distance from query point to the skyline hotel that dominate non-skyline hotel cand_d
 		for (Data cand_d : sNodes) {
 			double h_to_h_dist = Double.MAX_VALUE;
-
 			if (!sky_hotel.contains(cand_d)) {
 				for (Data s_h : sky_hotel) {
 					if (checkDominated(s_h.getData(), cand_d.getData())) {
@@ -369,7 +373,6 @@ public class ExactMethod {
 			long numberofNodes = n.getNumberofNodes();
 
 			while(startNode != null) {
-				
 				long last_iter_rt = System.nanoTime()-iteration_rt;
 				iteration_rt=System.nanoTime();
 //				System.out.println(startNode.getId()+"   ----->   "+ this.tmpStoreNodes.size() + "/"+numberofNodes+"   Last Iteration Runing time:"+(last_iter_rt/1000000)+"ms");
@@ -430,10 +433,8 @@ public class ExactMethod {
 
 //            hotels_scope = new HashMap<>();
 			int addtocounter=0;
+			Index idx = new Index(city,-1);
 			for (Map.Entry<Long, myNode> entry : tmpStoreNodes.entrySet()) {
-//				if(addtocounter%200==0) {
-//				}
-				
 				long one_iter_rt = System.currentTimeMillis();
 				addtocounter++;
 				sk_counter += entry.getValue().skyPaths.size();
@@ -442,19 +443,18 @@ public class ExactMethod {
 				long t_index_s = System.nanoTime();
 
 				index_s += (System.nanoTime() - t_index_s);
-
-				for (path p : my_n.skyPaths) {
-//                    if (!p.rels.isEmpty()) {
-					long ats = System.nanoTime();
-
-					boolean f = addToSkylineResultByLocation(lat,lng,p, sNodes); 
-
-					addResult_rt += System.nanoTime() - ats;
-//                    }
+				ArrayList<Data> d_list = idx.read_d_list_from_disk(my_n.id);
+				if(d_list!=null) {
+					for (path p : my_n.skyPaths) {
+//	                    if (!p.rels.isEmpty()) {
+						long ats = System.nanoTime();
+						boolean f = addToSkylineResultByLocation(lat,lng,p, d_list); 
+						addResult_rt += System.nanoTime() - ats;
+//	                    }
+					}	
 				}
-
 				one_iter_rt = System.currentTimeMillis()-one_iter_rt;
-//				System.out.println("size of skyline of Node "+ entry.getKey()+" is "+ entry.getValue().skyPaths.size()+" used "+ one_iter_rt+ "ms #### "+ sNodes.size() + " ####"+addtocounter+"............................................");
+//				System.out.println("size of skyline of Node "+ entry.getKey()+" is "+ entry.getValue().skyPaths.size()+" used "+ one_iter_rt+ "ms #### "+d_list.size()+" ######"+addtocounter+"............................................");
 				one_iter_rt= System.currentTimeMillis();
 			}
 
@@ -549,6 +549,7 @@ public class ExactMethod {
 //					+ Math.pow(my_endNode.locations[1] - d.location[1], 2));
 
 //            d.distance_q = Math.sqrt(Math.pow(d.location[0] - queryD.location[0], 2) + Math.pow(d.location[1] - queryD.location[1], 2));
+            d.distance_q = GoogleMaps.distanceInMeters(d.location[0], d.location[1], queryD.location[0],queryD.location[1]);
 
 			double end_distance = GoogleMaps.distanceInMeters(my_endNode.locations[0], my_endNode.locations[1],
 					d.location[0], d.location[1]);
@@ -616,12 +617,17 @@ public class ExactMethod {
 			this.pro_add_result_counter++;
 			long rrr = System.nanoTime();
 
+			
 			double[] final_costs = new double[np.costs.length + 3];
 			System.arraycopy(np.costs, 0, final_costs, 0, np.costs.length);
 //			double end_distance = Math.sqrt(Math.pow(my_endNode.locations[0] - d.location[0], 2)
 //						+ Math.pow(my_endNode.locations[1] - d.location[1], 2));
 
-//	        d.distance_q = Math.sqrt(Math.pow(d.location[0] - queryD.location[0], 2) + Math.pow(d.location[1] - queryD.location[1], 2));
+//	        d.distance_q = Math.sqrt(Math.pow(d.location[0] - lat, 2) + Math.pow(d.location[1] - lng, 2));
+	        d.distance_q = GoogleMaps.distanceInMeters(d.location[0], d.location[1], lat, lng);
+//	        
+//	        System.out.println(d);
+//			System.exit(0);
 
 			double end_distance = GoogleMaps.distanceInMeters(my_endNode.locations[0], my_endNode.locations[1],d.location[0], d.location[1]);
 
@@ -631,7 +637,6 @@ public class ExactMethod {
 			// Math.pow(d.location[1] - queryD.location[1], 2));
 
 			if (final_costs[0] < d.distance_q && final_costs[0] < this.dominated_checking.get(d.getPlaceId())) {
-
 				double[] d_attrs = d.getData();
 				for (int i = 4; i < final_costs.length; i++) {
 					final_costs[i] = d_attrs[i - 4];
@@ -709,8 +714,10 @@ public class ExactMethod {
 				double lat = (double) n.getProperty("lat");
 				double log = (double) n.getProperty("log");
 
-				double temp_distz = (Math.pow(lat - q_lat, 2) + Math.pow(log - q_lng, 2));
-				if (distz > temp_distz&& !this.tmpStoreNodes.containsKey(n.getId())) {
+//				double temp_distz = (Math.pow(lat - q_lat, 2) + Math.pow(log - q_lng, 2));
+				double temp_distz = GoogleMaps.distanceInMeters(lat, log, q_lat, q_lng);
+//				if (distz > temp_distz&& !this.tmpStoreNodes.containsKey(n.getId()) && temp_distz < 750) {
+				if (distz > temp_distz&& !this.tmpStoreNodes.containsKey(n.getId()) ) {
 					nn_node = n;
 					distz = temp_distz;
 					this.nn_dist = distz;

@@ -311,20 +311,31 @@ public class Index {
     }
 
 	public static void main(String[] args) {
-//		for (String cy : constants.cityList) {
-//			System.out.println("Builing index for city: "+cy);
-//			Index idx = new Index(cy, 2000);
-//			idx.buildIndex(true);
-//			System.out.println("Finished Index Build for city: "+cy);
-//			System.out.println("====================================================");
-//		}
+		for (String cy : constants.cityList) {
+			double range = 0;
+			for(int i = 0 ; i<= 30;i++) {
+				if(i ==0 ) {
+					range = -1; 
+				}else if(i==1) {
+					range = 500;
+				}else {
+					range+=50;
+				}
+				System.out.println("Builing index for city: "+cy);
+				Index idx = new Index(cy, range);
+				idx.buildIndex(true);
+				System.out.println("Finished Index Build for city: "+cy);
+				System.out.println("====================================================");
+			}
+			
+		}
 
-		String cy = "LA";
-		System.out.println("Builing index for city: "+ cy);
-		Index idx = new Index(cy, -1);
-		idx.buildIndex(true);
-		System.out.println("Finished Index Build for city: "+cy);
-		System.out.println("====================================================");
+//		String cy = "LA";
+//		System.out.println("Builing index for city: "+ cy);
+//		Index idx = new Index(cy, -1);
+//		idx.buildIndex(true);
+//		System.out.println("Finished Index Build for city: "+cy);
+//		System.out.println("====================================================");
 
 	}
 
