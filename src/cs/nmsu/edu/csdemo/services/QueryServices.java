@@ -234,6 +234,10 @@ public class QueryServices {
 		}
 	}
 
+	
+	@Path("/improvedExactIndex/{city}/{id}")
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
 	public Response improvedExactQueryByIdIndex(@PathParam("id") int queryPlaceId, @PathParam("city") String city) {
 
 		if (!constants.cityList.contains(city)) {
@@ -491,7 +495,6 @@ public class QueryServices {
 		connector n = new connector(graphPath);
 		n.startDB();
 		try (Transaction tx = n.graphDB.beginTx()) {
-
 			for (ResultBean rbean : result) {
 				for (NodeBeans nbean : rbean.nodeIDs) {
 					double[] locations = new double[2];
@@ -500,11 +503,60 @@ public class QueryServices {
 					nbean.setLat(locations[0]);
 					nbean.setLng(locations[1]);
 				}
+				rbean.end_name = getLocationNameByID(rbean.end, city);
 			}
 			tx.success();
 		}
 
 		n.shutdownDB();
+	}
+
+	private String getLocationNameByID(long id, String city) {
+		
+		String name = null;
+		
+		IOPobject iobj = new IOPobject();
+		String home_folder = System.getProperty("user.home");
+		String dataPath = home_folder + "/mydata/DemoProject/data/staticNode_real_" + city + ".txt";
+
+		BufferedReader br = null;
+		int linenumber = 0;
+
+		try {
+			br = new BufferedReader(new FileReader(dataPath));
+			String line = null;
+			while ((line = br.readLine()) != null) {
+				if (linenumber == id) {
+//                    System.out.println(line);
+					String[] infos = line.split(",");
+					Double lat = Double.parseDouble(infos[1]);
+					Double log = Double.parseDouble(infos[2]);
+
+					Float c1 = Float.parseFloat(infos[3]);
+					Float c2 = Float.parseFloat(infos[4]);
+					Float c3 = Float.parseFloat(infos[5]);
+
+					iobj.setPlaceID((int) id);
+					iobj.setLocations(new double[] { lat, log });
+					iobj.setData(new float[] { c1, c2, c3 });
+
+					iobj.setG_p_id(infos[6]);
+					iobj.setG_p_name(infos[7]);
+					
+					name = iobj.g_p_name;
+					
+					break;
+				} else {
+					linenumber++;
+				}
+			}
+			br.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.err.println("Can not open the file, please check it. ");
+		}
+		
+		return name;
 	}
 
 	// check whether the given location is a IOP in the data set.
@@ -546,11 +598,11 @@ public class QueryServices {
 	/**Testing main function**/
 	public static void main(String args[]) {
 		QueryServices qs = new QueryServices();
-		qs.improvedExactQueryByLocationIndex("NY", 40.9062324,-73.90143);
+//		qs.improvedExactQueryByLocationIndex("SF", 37.7784685, -122.3943108);
 //		qs.improvedExactQueryByLocation("NY", 40.9062324,-73.90143);
 //		System.out.println("======================================================");
-//		qs.improvedExactQueryById(5079, "NY");
-//		qs.improvedExactQueryByIdIndex(5079, "NY");
+		qs.improvedExactQueryById(5079, "NY");
+		qs.improvedExactQueryByIdIndex(5079, "NY");
 //		System.out.println("======================================================");
 //		qs.improvedExactQueryByLocationType("NY", 40.9062324,-73.90143,"food");
 //		qs.improvedExactQueryByLocationTypeIndex("NY", 40.9062324,-73.90143,"food");
@@ -570,7 +622,7 @@ public class QueryServices {
 ////		
 ////		
 //		System.out.println("======================================================");
-//		qs.ApproxMixedIndexedQueryByLocation("NY", 40.9062324,-73.90143,850);
+//		qs.ApproxMixedIndexedQueryByLocation("SF", 37.7784685, -122.3943108 , 750);
 //		System.out.println("======================================================");
 //		qs.ApproxMixedIndexedQueryById(5079, "NY",850);
 //		System.out.println("======================================================");

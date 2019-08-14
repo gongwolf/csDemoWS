@@ -290,11 +290,11 @@ public class ApproxMixedIndex {
 
 		for (Result r : sortedList) {
 			this.finalDatas.add(r.end.getPlaceId());
-//            if (r.p != null) {
-//                for (Long nn : r.p.nodes) {
-//                    final_bus_stops.add(nn);
-//                }
-//            }
+			if (r.p != null) {
+				for (Long nn : r.p.nodes) {
+					final_bus_stops.add(nn);
+				}
+			}
 		}
 
 		sb.append(finalDatas.size() + " " + this.skyPaths.size() + " " + sk_counter + "  " + add_counter + " ");
@@ -528,11 +528,11 @@ public class ApproxMixedIndex {
 
 		for (Result r : sortedList) {
 			this.finalDatas.add(r.end.getPlaceId());
-//            if (r.p != null) {
-//                for (Long nn : r.p.nodes) {
-//                    final_bus_stops.add(nn);
-//                }
-//            }
+			if (r.p != null) {
+				for (Long nn : r.p.nodes) {
+					final_bus_stops.add(nn);
+				}
+			}
 		}
 
 		sb.append(finalDatas.size() + " " + this.skyPaths.size() + " " + sk_counter + "  " + add_counter + " ");
