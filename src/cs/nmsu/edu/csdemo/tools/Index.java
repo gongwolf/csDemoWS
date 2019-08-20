@@ -330,7 +330,7 @@ public class Index {
 			
 		}
 
-//		String cy = "LA";
+//		String cy = "NY";
 //		System.out.println("Builing index for city: "+ cy);
 //		Index idx = new Index(cy, -1);
 //		idx.buildIndex(true);

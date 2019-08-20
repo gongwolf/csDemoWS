@@ -163,7 +163,7 @@ public class ExactMethod {
 			Node startNode = nearestNetworkNode(queryD);
 			long numberofNodes = n.getNumberofNodes();
 			while (startNode != null) {
-				System.out.println(startNode.getId()+"   ----->   "+ this.tmpStoreNodes.size() + "/"+numberofNodes);
+//				System.out.println(startNode.getId()+"   ----->   "+ this.tmpStoreNodes.size() + "/"+numberofNodes);
 				myNode s = new myNode(queryD, startNode.getId(), -1, n);
 				myNodePriorityQueue mqueue = new myNodePriorityQueue();
 				mqueue.add(s);
