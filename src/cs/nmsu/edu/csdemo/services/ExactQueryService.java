@@ -39,6 +39,7 @@ public class ExactQueryService {
 		qp.setNum_bus_stop(num_bus_stop);
 		qp.setType(type);
 
+		System.out.println("\n Call the function ExactImprovedIndex by ID ");
 		System.out.println(qp);
 		System.out.println("===================="+ (type != null)+"  " + (!type.equals("")));
 
@@ -73,6 +74,7 @@ public class ExactQueryService {
 	public Response ExactImprovedIndexedQueryByLocationQueryParameter(@PathParam("city") String city,
 			@PathParam("lat") double lat, @PathParam("lng") double lng, @PathParam("type") String type,
 			@PathParam("num_bus_stop") int num_bus_stop) {
+		System.out.println("\n Call the function ExactImprovedIndex by Location ");
 
 		if (!constants.cityList.contains(city)) {
 			return null;

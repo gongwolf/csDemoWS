@@ -35,6 +35,10 @@ public class ApproxQueryService {
 			@PathParam("id") int queryPlaceId, @PathParam("threshold") double distance_threshold,
 			@PathParam("type") String type, @PathParam("num_bus_stop") int num_bus_stop) {
 
+		
+		System.out.println("\n Call the function approxRangeIndexedById ");
+
+		
 		QueryParameters qp = new QueryParameters();
 		qp.setCity(city);
 		qp.setNum_bus_stop(num_bus_stop);
@@ -74,6 +78,9 @@ public class ApproxQueryService {
 			@PathParam("threshold") double distance_threshold, @PathParam("type") String type,
 			@PathParam("num_bus_stop") int num_bus_stop) {
 
+		System.out.println("\n Call the function approxRangeIndexedByLocation ");
+
+		
 		if (!constants.cityList.contains(city)) {
 			return null;
 		}
@@ -113,6 +120,8 @@ public class ApproxQueryService {
 	public Response ApproxMixedIndexedQueryByIdQueryParameters(@PathParam("city") String city,
 			@PathParam("id") int queryPlaceId, @PathParam("threshold") double distance_threshold,
 			@PathParam("type") String type, @PathParam("num_bus_stop") int num_bus_stop) {
+		
+		System.out.println("\n Call the function approxMixedIndexedById ");
 
 		QueryParameters qp = new QueryParameters();
 		qp.setCity(city);
@@ -153,7 +162,7 @@ public class ApproxQueryService {
 			@PathParam("threshold") double distance_threshold, @PathParam("type") String type,
 			@PathParam("num_bus_stop") int num_bus_stop) {
 
-		System.out.println("call the function ApproxMixedIndexedQueryByLocationQueryParameter");
+		System.out.println("\n call the function approxMixedIndexedByLocation");
 
 		if (!constants.cityList.contains(city)) {
 			return null;

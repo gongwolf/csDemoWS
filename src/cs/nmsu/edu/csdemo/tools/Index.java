@@ -18,8 +18,10 @@ import org.neo4j.graphdb.Transaction;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Random;
 
 public class Index {
@@ -40,12 +42,12 @@ public class Index {
 	public Index(String city, double distance_threshold) {
 //		this.distance_threshold = 0.0105;
 		this.distance_threshold = distance_threshold;
-		if(distance_threshold!= -1) {
-			this.home_folder = base + "/" + city + "_index_"+(int)distance_threshold+"/";
-		}else {
+		if (distance_threshold != -1) {
+			this.home_folder = base + "/" + city + "_index_" + (int) distance_threshold + "/";
+		} else {
 			this.home_folder = base + "/" + city + "_index_all/";
 		}
-		
+
 		this.graphPath = System.getProperty("user.home") + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
 		this.treePath = System.getProperty("user.home") + "/mydata/DemoProject/data/real_tree_" + city + ".rtr";
 		this.dataPath = System.getProperty("user.home") + "/mydata/DemoProject/data/staticNode_real_" + city + ".txt";
@@ -57,6 +59,49 @@ public class Index {
 		this.num_nodes = getLineNumbers();
 		this.pagesize_list = 1024;
 		System.out.println(this.home_folder);
+	}
+
+	public Index(String city, double distance_threshold, String type) {
+		this.distance_threshold = distance_threshold;
+		if (distance_threshold != -1) {
+			if (type.equals("all") || type == null || type.equals("")) {
+				this.home_folder = base + "/" + city + "_index_" + (int) distance_threshold + "/";
+			} else {
+				this.home_folder = base + "/" + city + "_index_" + (int) distance_threshold + "_" + type + "/";
+			}
+		} else {
+			if (type.equals("all") || type == null || type.equals("")) {
+				this.home_folder = base + "/" + city + "_index_all/";
+			} else {
+				this.home_folder = base + "/" + city + "_index_all_" + type + "/";
+			}
+		}
+
+		System.out.println(home_folder);
+
+		this.graphPath = System.getProperty("user.home") + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
+		if (type.equals("all") || type == null || type.equals("")) {
+			this.treePath = System.getProperty("user.home") + "/mydata/DemoProject/data/real_tree_" + city + ".rtr";
+			this.dataPath = System.getProperty("user.home") + "/mydata/DemoProject/data/staticNode_real_" + city
+					+ ".txt";
+		} else {
+			this.treePath = System.getProperty("user.home") + "/mydata/DemoProject/data/real_tree_" + city + "_" + type
+					+ ".rtr";
+			this.dataPath = System.getProperty("user.home") + "/mydata/DemoProject/data/staticNode_real_" + city + "_"
+					+ type + ".txt";
+		}
+
+//		System.out.println(graphPath);
+//		System.out.println(treePath);
+//		System.out.println(dataPath);
+//		
+		this.source_data_tree = this.treePath;
+		this.neo4j_db = this.graphPath;
+		this.node_info_path = System.getProperty("user.home") + "/mydata/projectData/testGraph_real_50_Random/data/"
+				+ city + "_NodeInfo.txt"; // Path of the Graph Nodes Information
+		this.num_nodes = getLineNumbers();
+		this.pagesize_list = 1024;
+//		System.out.println(node_info_path);
 	}
 
 	public void buildIndex(boolean deleteBeforeBuild) {
@@ -97,7 +142,7 @@ public class Index {
 				}
 
 				try (Transaction tx = n.graphDB.beginTx()) {
-					myNode node = new myNode(node_id,n);
+					myNode node = new myNode(node_id, n);
 
 					ArrayList<Data> d_list;
 					if (this.distance_threshold == -1) {
@@ -107,7 +152,8 @@ public class Index {
 						for (Data d : sk.sky_hotels) {
 //							double d2 = Math.sqrt(Math.pow(node.locations[0] - d.location[0], 2)
 //									+ Math.pow(node.locations[1] - d.location[1], 2));
-                            double d2 = GoogleMaps.distanceInMeters(node.locations[0], node.locations[1], d.location[0], d.location[1]);
+							double d2 = GoogleMaps.distanceInMeters(node.locations[0], node.locations[1], d.location[0],
+									d.location[1]);
 							if (d2 < this.distance_threshold) {
 								d_list.add(d);
 							}
@@ -116,20 +162,22 @@ public class Index {
 					}
 
 					// if we can find the distance from the bus_stop n to the hotel d is shorter
-					// than the distance to one of the skyline hotels s_d
+					// than the distance to one of the skyline hotels s_d which dominate d
 					// It means the hotel could be a candidate hotel of the bus stop n.
 					for (Data d : sk.allNodes) {
 						boolean flag = true;
 						// distance from node to d
 //						double d2 = Math.sqrt(Math.pow(node.locations[0] - d.location[0], 2) + Math.pow(node.locations[1] - d.location[1], 2));
-                        double d2 = GoogleMaps.distanceInMeters(node.locations[0], node.locations[1], d.location[0], d.location[1]);
+						double d2 = GoogleMaps.distanceInMeters(node.locations[0], node.locations[1], d.location[0],
+								d.location[1]);
 
 						// the minimum distance from node n to the skyline hotels s_d who dominated d
 						double min_dist = Double.MAX_VALUE;
 						for (Data s_d : sk.sky_hotels) {
 							// distance from node to the skyline data s_d
 //							double d1 = Math.sqrt(Math.pow(node.locations[0] - s_d.location[0], 2) + Math.pow(node.locations[1] - s_d.location[1], 2));
-                            double d1 = GoogleMaps.distanceInMeters(node.locations[0], node.locations[1], s_d.location[0], s_d.location[1]);
+							double d1 = GoogleMaps.distanceInMeters(node.locations[0], node.locations[1],
+									s_d.location[0], s_d.location[1]);
 
 							if (checkDominated(s_d.getData(), d.getData()) && d1 < min_dist) {
 								if (distance_threshold == -1) {
@@ -193,7 +241,7 @@ public class Index {
 						// ++
 						if ((this.pagesize_list / 4) < (records + 1)) {
 							page_list_number++;
-							records=0;
+							records = 0;
 						}
 					}
 
@@ -205,13 +253,12 @@ public class Index {
 
 					page_list_number++;
 					tx.success();
-					
-					
-					if(d_size>0) {
-						System.out.println(node_id+"     "+d_size+"   "+d_size*4+"/1024="+(d_size*4/1024+1)+"pages  "+  page_list_number+"  "+records);
-					}
+
+//					if(d_size>0) {
+//						System.out.println(node_id+"     "+d_size+"   "+d_size*4+"/1024="+(d_size*4/1024+1)+"pages  "+  page_list_number+"  "+records);
+//					}
 				}
-				
+
 //				System.exit(0);
 
 			}
@@ -266,69 +313,71 @@ public class Index {
 		}
 		return true;
 	}
-	
+
 	public ArrayList<Data> read_d_list_from_disk(long node_id) {
 
-        String header_name = this.home_folder + "/header.idx";
-        String list_name = this.home_folder + "/list.idx";
-        String Data_file = this.home_folder + "/data.dat";
-        ArrayList<Data> d_list = new ArrayList<>();
+		String header_name = this.home_folder + "/header.idx";
+		String list_name = this.home_folder + "/list.idx";
+		String Data_file = this.home_folder + "/data.dat";
+		ArrayList<Data> d_list = new ArrayList<>();
 
-        try {
+		try {
 
-            RandomAccessFile header_f = new RandomAccessFile(header_name, "r");
-            header_f.seek((node_id * 8));
-            int pagenumber = header_f.readInt();
-            int d_size = header_f.readInt();
+			RandomAccessFile header_f = new RandomAccessFile(header_name, "r");
+			header_f.seek((node_id * 8));
+			int pagenumber = header_f.readInt();
+			int d_size = header_f.readInt();
 
-            RandomAccessFile list_f = new RandomAccessFile(list_name, "r");
-            list_f.seek(pagenumber * pagesize_list);
+			RandomAccessFile list_f = new RandomAccessFile(list_name, "r");
+			list_f.seek(pagenumber * pagesize_list);
 
+			RandomAccessFile data_f = new RandomAccessFile(Data_file, "r");
 
-            RandomAccessFile data_f = new RandomAccessFile(Data_file, "r");
+			for (int i = 0; i < d_size; i++) {
+				int d_id = list_f.readInt();
+				Data d = new Data(3);
+				data_f.seek(d_id * d.get_size());
+				byte[] b_d = new byte[d.get_size()];
+				data_f.read(b_d);
+				d.read_from_buffer(b_d);
+				d_list.add(d);
+			}
 
+			data_f.close();
+			header_f.close();
+			list_f.close();
 
-            for (int i = 0; i < d_size; i++) {
-                int d_id = list_f.readInt();
-                Data d = new Data(3);
-                data_f.seek(d_id * d.get_size());
-                byte[] b_d = new byte[d.get_size()];
-                data_f.read(b_d);
-                d.read_from_buffer(b_d);
-                d_list.add(d);
-            }
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
-            data_f.close();
-            header_f.close();
-            list_f.close();
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return d_list;
-    }
+		return d_list;
+	}
 
 	public static void main(String[] args) {
 		for (String cy : constants.cityList) {
 			double range = 0;
-			for(int i = 0 ; i<= 30;i++) {
-				if(i ==0 ) {
-					range = -1; 
-				}else if(i==1) {
-					range = 500;
-				}else {
-					range+=50;
+			for (int i = 0; i <= 37; i++) {
+				if (i == 0) {
+					range = -1;
+				} else if (i == 1) {
+					range = 200;
+				} else {
+					range += 50;
 				}
-				System.out.println("Builing index for city: "+cy);
-				Index idx = new Index(cy, range);
-				idx.buildIndex(true);
-				System.out.println("Finished Index Build for city: "+cy);
-				System.out.println("====================================================");
+
+				HashSet<String> typeList = new HashSet<>(Arrays.asList("all", "food", "lodging", "restaurant"));
+				for (String type : typeList) {
+					System.out.println("Builing index for city: " + cy + " for type " + type);
+					Index idx = new Index(cy, range, type);
+					idx.buildIndex(true);
+					System.out.println("Finished Index Build for city: " + cy);
+					System.out.println("====================================================");
+				}
 			}
-			
+
 		}
 
 //		String cy = "NY";
@@ -336,6 +385,13 @@ public class Index {
 //		Index idx = new Index(cy, -1);
 //		idx.buildIndex(true);
 //		System.out.println("Finished Index Build for city: "+cy);
+//		System.out.println("====================================================");
+
+//		String cy = "NY";
+//		System.out.println("Builing index for city: " + cy);
+//		Index idx = new Index(cy, -1, "food");
+//		idx.buildIndex(true);
+//		System.out.println("Finished Index Build for city: " + cy);
 //		System.out.println("====================================================");
 
 	}

@@ -54,7 +54,7 @@ public class ApproxRangeIndex {
 	private long sky_add_result_counter; // how many results are taken the addtoskyline operation
 	private Data queryD;
 	private String city;
-	private int num_bus_stop=-1;
+	private QueryParameters qp;
 
 	public ApproxRangeIndex(String city, double distance_threshold) {
 		r = new Random();
@@ -82,8 +82,9 @@ public class ApproxRangeIndex {
 			this.dataPath = home_folder + "/mydata/DemoProject/data/staticNode_real_" + city + "_" + qp.type + ".txt";
 			System.out.println("query with type");
 		}
+		
+		this.qp = qp;
 
-		this.num_bus_stop = qp.num_bus_stop;
 	}
 
 	public ApproxRangeIndex(String city, double distance_threshold, String type) {
@@ -210,8 +211,8 @@ public class ApproxRangeIndex {
 
 							boolean num_bus_stop_query_flag = false;
 
-							if (this.num_bus_stop != -1) {
-								if (np.rels.size() <= this.num_bus_stop) {
+							if (qp.num_bus_stop != -1) {
+								if (np.rels.size() <= qp.num_bus_stop) {
 									num_bus_stop_query_flag = true;
 								}
 							} else {
@@ -249,7 +250,7 @@ public class ApproxRangeIndex {
 
 //	            System.out.println("there are " + this.tmpStoreNodes.size() + " bus stops are visited");
 
-			Index idx = new Index(city, this.distance_threshold);
+			Index idx = new Index(qp.city, this.distance_threshold,qp.type);
 			for (Map.Entry<Long, myNode> entry : tmpStoreNodes.entrySet()) {
 				sk_counter += entry.getValue().skyPaths.size();
 				long t_index_s = System.nanoTime();
@@ -415,8 +416,8 @@ public class ApproxRangeIndex {
 
 							boolean num_bus_stop_query_flag = false;
 
-							if (this.num_bus_stop != -1) {
-								if (np.rels.size() <= this.num_bus_stop) {
+							if (qp.num_bus_stop != -1) {
+								if (np.rels.size() <= qp.num_bus_stop) {
 									num_bus_stop_query_flag = true;
 								}
 							} else {
@@ -454,7 +455,7 @@ public class ApproxRangeIndex {
 
 //	            System.out.println("there are " + this.tmpStoreNodes.size() + " bus stops are visited");
 
-			Index idx = new Index(city, this.distance_threshold);
+			Index idx = new Index(qp.city, this.distance_threshold,qp.type);
 			for (Map.Entry<Long, myNode> entry : tmpStoreNodes.entrySet()) {
 				sk_counter += entry.getValue().skyPaths.size();
 				long t_index_s = System.nanoTime();

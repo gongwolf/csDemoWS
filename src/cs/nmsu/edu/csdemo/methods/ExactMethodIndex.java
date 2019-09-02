@@ -47,7 +47,7 @@ public class ExactMethodIndex {
 	private Data queryD;
 	private long d_list_num = 0;
 	private String city = "";
-	private int num_bus_stop=-1;
+	private QueryParameters qp;
 
 	public ExactMethodIndex(int graph_size, String degree, double range, int hotels_num) {
 		this.range = range;
@@ -89,7 +89,7 @@ public class ExactMethodIndex {
 			System.out.println("There are " + this.hotels_num + " POI in the city " + city+" are "+qp.getType());
 		}
 		
-		this.num_bus_stop = qp.num_bus_stop;
+		this.qp = qp;
 
 	}
 
@@ -215,8 +215,8 @@ public class ExactMethodIndex {
 								
 								boolean num_bus_stop_query_flag = false;
 
-								if (this.num_bus_stop != -1) {
-									if (np.rels.size() <= this.num_bus_stop) {
+								if (qp.num_bus_stop != -1) {
+									if (np.rels.size() <= qp.num_bus_stop) {
 										num_bus_stop_query_flag = true;
 									}
 								} else {
@@ -260,7 +260,7 @@ public class ExactMethodIndex {
 
 //            hotels_scope = new HashMap<>();
 			int addtocounter = 0;
-			Index idx = new Index(city, -1);
+			Index idx = new Index(qp.city, -1, qp.type );
 			for (Map.Entry<Long, myNode> entry : tmpStoreNodes.entrySet()) {
 //				if(addtocounter%200==0) {
 //					System.out.println(addtocounter+"............................................");
@@ -434,8 +434,8 @@ public class ExactMethodIndex {
 								
 								boolean num_bus_stop_query_flag = false;
 
-								if (this.num_bus_stop != -1) {
-									if (np.rels.size() <= this.num_bus_stop) {
+								if (qp.num_bus_stop != -1) {
+									if (np.rels.size() <= qp.num_bus_stop) {
 										num_bus_stop_query_flag = true;
 									}
 								} else {
@@ -480,7 +480,7 @@ public class ExactMethodIndex {
 
 //            hotels_scope = new HashMap<>();
 			int addtocounter = 0;
-			Index idx = new Index(city, -1);
+			Index idx = new Index(qp.city, -1, qp.type );
 			for (Map.Entry<Long, myNode> entry : tmpStoreNodes.entrySet()) {
 				long one_iter_rt = System.currentTimeMillis();
 				addtocounter++;

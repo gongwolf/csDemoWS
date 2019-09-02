@@ -277,7 +277,7 @@ public class ApproxMixedIndex {
 
 //            System.out.println(sk_counter+"~~~~~");
 
-			Index idx = new Index(city, distance_threshold);
+			Index idx = new Index(qp.city, this.distance_threshold,qp.type);
 			for (Map.Entry<Long, myNode> entry : tmpStoreNodes.entrySet()) {
 				long t_index_s = System.nanoTime();
 				myNode my_n = entry.getValue();
@@ -524,7 +524,7 @@ public class ApproxMixedIndex {
 
 //            System.out.println(sk_counter+"~~~~~");
 
-			Index idx = new Index(city, distance_threshold);
+			Index idx = new Index(qp.city, this.distance_threshold,qp.type);
 			for (Map.Entry<Long, myNode> entry : tmpStoreNodes.entrySet()) {
 				long t_index_s = System.nanoTime();
 				myNode my_n = entry.getValue();

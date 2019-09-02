@@ -60,8 +60,7 @@ public class SeparateRealData {
 
 			File file = new File(homepath+"/mydata/DemoProject/data/staticNode_real_" + abbr_city + ".txt"); // store
 																													// the
-			// hotel
-			// information
+			// hotel information of the city
 			String t_path = homepath+"/mydata/DemoProject/data/real_tree_" + abbr_city + ".rtr";
 			RTree rt = new RTree(t_path, Constants.BLOCKLENGTH, Constants.CACHESIZE, dimension);
 
@@ -71,6 +70,8 @@ public class SeparateRealData {
 
 			for (String type : p_types) {
 				String path = this.poi_data + "/outfilename_" + type + "_" + city;
+				
+				//interesting of points information of the given type and city
 				String tree_type_path = homepath+"/mydata/DemoProject/data/real_tree_" + abbr_city +"_"+type +".rtr";
 				RTree type_rt = new RTree(tree_type_path, Constants.BLOCKLENGTH, Constants.CACHESIZE, dimension);
 				
@@ -104,7 +105,7 @@ public class SeparateRealData {
 					poi_obj.locations = new double[] { -1, -1 };
 					poi_obj.g_p_name = "";
 					
-					int type_counter = 0;
+					int type_counter = 0; // the id of the iop of the specific type in this city
 
 					while (((line = b.readLine()) != null)) {
 
