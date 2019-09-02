@@ -10,12 +10,11 @@ import cs.nmsu.edu.csdemo.RstarTree.Data;
 import cs.nmsu.edu.csdemo.neo4jTools.connector;
 import cs.nmsu.edu.csdemo.tools.GoogleMaps;
 import cs.nmsu.edu.csdemo.tools.Index;
-import cs.nmsu.edu.csdemo.tools.QueryParameters;
 
 import java.io.*;
 import java.util.*;
 
-public class ExactMethodIndex {
+public class ExactMethodKlength {
 	public double nn_dist; // the euclidean distance from the query hotel to the bus stop.
 	public ArrayList<path> qqqq = new ArrayList<>();
 	public ArrayList<Result> skyPaths = new ArrayList<>();
@@ -47,9 +46,8 @@ public class ExactMethodIndex {
 	private Data queryD;
 	private long d_list_num = 0;
 	private String city = "";
-	private int num_bus_stop=-1;
 
-	public ExactMethodIndex(int graph_size, String degree, double range, int hotels_num) {
+	public ExactMethodKlength(int graph_size, String degree, double range, int hotels_num) {
 		this.range = range;
 		this.hotels_num = hotels_num;
 		r = new Random(System.nanoTime());
@@ -62,7 +60,7 @@ public class ExactMethodIndex {
 				+ this.degree + "_" + range + "_" + hotels_num + ".txt";
 	}
 
-	public ExactMethodIndex(String city) {
+	public ExactMethodKlength(String city) {
 		this.city = city;
 		r = new Random(System.nanoTime());
 		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
@@ -72,28 +70,7 @@ public class ExactMethodIndex {
 		System.out.println("There are " + this.hotels_num + " in the city " + city);
 	}
 
-	public ExactMethodIndex(String city, QueryParameters qp) {
-		this.city = city;
-		r = new Random(System.nanoTime());
-		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
-		
-		if(qp.getType().equals("")||qp.getType()==null) {
-			this.treePath = home_folder + "/mydata/DemoProject/data/real_tree_" + city + ".rtr";
-			this.dataPath = home_folder + "/mydata/DemoProject/data/staticNode_real_" + city + ".txt";
-			this.hotels_num = getNumberOfHotels();
-			System.out.println("There are " + this.hotels_num + " POI in the city " + city);
-		}else {
-			this.treePath = home_folder + "/mydata/DemoProject/data/real_tree_" + city + "_" + qp.getType() + ".rtr";
-			this.dataPath = home_folder + "/mydata/DemoProject/data/staticNode_real_" + city + "_" + qp.getType() + ".txt";
-			this.hotels_num = getNumberOfHotels();
-			System.out.println("There are " + this.hotels_num + " POI in the city " + city+" are "+qp.getType());
-		}
-		
-		this.num_bus_stop = qp.num_bus_stop;
-
-	}
-
-	public ExactMethodIndex(String city, String type) {
+	public ExactMethodKlength(String city, String type) {
 		this.city = city;
 		r = new Random(System.nanoTime());
 		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
@@ -103,13 +80,13 @@ public class ExactMethodIndex {
 		System.out.println("There are " + this.hotels_num + " " + type + " in the city " + city);
 	}
 
-	public ExactMethodIndex(String tree, String data, String graph) {
+	public ExactMethodKlength(String tree, String data, String graph) {
 		this.graphPath = graph;
 		this.treePath = tree;
 		this.dataPath = data;
 	}
 
-	public void baselineIndex(Data queryD) {
+	public void baselineIndex(Data queryD, int K) {
 		this.queryD = queryD;
 		StringBuffer sb = new StringBuffer();
 		sb.append(queryD.getPlaceId() + " ");
@@ -190,7 +167,7 @@ public class ExactMethodIndex {
 			Node startNode = nearestNetworkNode(queryD);
 			long numberofNodes = n.getNumberofNodes();
 			while (startNode != null) {
-//				System.out.println(startNode.getId() + "   ----->   " + this.tmpStoreNodes.size() + "/" + numberofNodes);
+				System.out.println(startNode.getId()+"   ----->   "+ this.tmpStoreNodes.size() + "/"+numberofNodes);
 				myNode s = new myNode(queryD, startNode.getId(), -1, n);
 				myNodePriorityQueue mqueue = new myNodePriorityQueue();
 				mqueue.add(s);
@@ -212,41 +189,27 @@ public class ExactMethodIndex {
 							ArrayList<path> new_paths = p.expand(n);
 							expasion_rt += (System.nanoTime() - ee);
 							for (path np : new_paths) {
-								
-								boolean num_bus_stop_query_flag = false;
-
-								if (this.num_bus_stop != -1) {
-									if (np.rels.size() <= this.num_bus_stop) {
-										num_bus_stop_query_flag = true;
+								if (!np.hasCycle() && np.rels.size() <= K ) {
+									myNode next_n;
+									if (this.tmpStoreNodes.containsKey(np.endNode)) {
+										next_n = tmpStoreNodes.get(np.endNode);
+									} else {
+										next_n = new myNode(queryD, np.endNode, -1, n);
+										this.tmpStoreNodes.put(next_n.id, next_n);
 									}
-								} else {
-									num_bus_stop_query_flag = true;
+
+									// lemma 2
+									if (!(this.tmpStoreNodes.get(np.startNode).distance_q > next_n.distance_q)) {
+										if (next_n.addToSkyline(np) && !next_n.inqueue) {
+											mqueue.add(next_n);
+											next_n.inqueue = true;
+										}
+									}
 								}
-
-								if (num_bus_stop_query_flag) {
-									if (!np.hasCycle()) {
-										myNode next_n;
-										if (this.tmpStoreNodes.containsKey(np.endNode)) {
-											next_n = tmpStoreNodes.get(np.endNode);
-										} else {
-											next_n = new myNode(queryD, np.endNode, -1, n);
-											this.tmpStoreNodes.put(next_n.id, next_n);
-										}
-
-										// lemma 2
-										if (!(this.tmpStoreNodes.get(np.startNode).distance_q > next_n.distance_q)) {
-											if (next_n.addToSkyline(np) && !next_n.inqueue) {
-												mqueue.add(next_n);
-												next_n.inqueue = true;
-											}
-										}
-									}
-								}	
 							}
 						}
 					}
 				}
-
 				startNode = nearestNetworkNode(queryD);
 			}
 
@@ -263,7 +226,7 @@ public class ExactMethodIndex {
 			Index idx = new Index(city, -1);
 			for (Map.Entry<Long, myNode> entry : tmpStoreNodes.entrySet()) {
 //				if(addtocounter%200==0) {
-//					System.out.println(addtocounter+"............................................");
+					System.out.println(addtocounter+"............................................");
 //				}
 				addtocounter++;
 				long one_iter_rt = System.currentTimeMillis();
@@ -275,7 +238,6 @@ public class ExactMethodIndex {
 
 				index_s += (System.nanoTime() - t_index_s);
 				ArrayList<Data> d_list = idx.read_d_list_from_disk(my_n.id);
-//				System.out.println(d_list.size()+" < ----------  >"+my_n.skyPaths.size());
 				if (d_list != null) {
 					for (path p : my_n.skyPaths) {
 						if (!p.rels.isEmpty()) {
@@ -285,6 +247,10 @@ public class ExactMethodIndex {
 						}
 					}
 				}
+
+//				one_iter_rt = System.currentTimeMillis()-one_iter_rt;
+//				System.out.println("size of skyline of Node "+ entry.getKey()+" is "+ entry.getValue().skyPaths.size()+" used "+ one_iter_rt+ "ms #### "+ d_list.size()+" ######"+ addtocounter+"............................................");
+//				one_iter_rt= System.currentTimeMillis();
 			}
 
 			// time that is used to find the candidate objects, find the nearest objects,
@@ -336,7 +302,7 @@ public class ExactMethodIndex {
 
 	}
 
-	public void baselineWihtIndex(double lat, double lng) {
+	public void baselineWihtIndex(double lat, double lng, int k) {
 		System.out.println("call baselineWihtIndex function");
 		StringBuffer sb = new StringBuffer();
 		sb.append("[" + lat + "," + lng + "]" + " ");
@@ -431,33 +397,20 @@ public class ExactMethodIndex {
 							ArrayList<path> new_paths = p.expand(n);
 							expasion_rt += (System.nanoTime() - ee);
 							for (path np : new_paths) {
-								
-								boolean num_bus_stop_query_flag = false;
-
-								if (this.num_bus_stop != -1) {
-									if (np.rels.size() <= this.num_bus_stop) {
-										num_bus_stop_query_flag = true;
+								if (!np.hasCycle() && np.rels.size() <= k) {
+									myNode next_n;
+									if (this.tmpStoreNodes.containsKey(np.endNode)) {
+										next_n = tmpStoreNodes.get(np.endNode);
+									} else {
+										next_n = new myNode(lat, lng, np.endNode, -1, n);
+										this.tmpStoreNodes.put(next_n.id, next_n);
 									}
-								} else {
-									num_bus_stop_query_flag = true;
-								}
-								
-								if(num_bus_stop_query_flag) {
-									if (!np.hasCycle()) {
-										myNode next_n;
-										if (this.tmpStoreNodes.containsKey(np.endNode)) {
-											next_n = tmpStoreNodes.get(np.endNode);
-										} else {
-											next_n = new myNode(lat, lng, np.endNode, -1, n);
-											this.tmpStoreNodes.put(next_n.id, next_n);
-										}
 
-										// lemma 2
-										if (!(this.tmpStoreNodes.get(np.startNode).distance_q > next_n.distance_q)) {
-											if (next_n.addToSkyline(np) && !next_n.inqueue) {
-												mqueue.add(next_n);
-												next_n.inqueue = true;
-											}
+									// lemma 2
+									if (!(this.tmpStoreNodes.get(np.startNode).distance_q > next_n.distance_q)) {
+										if (next_n.addToSkyline(np) && !next_n.inqueue) {
+											mqueue.add(next_n);
+											next_n.inqueue = true;
 										}
 									}
 								}
@@ -478,7 +431,6 @@ public class ExactMethodIndex {
 
 			long tt_sl = 0;
 
-//            hotels_scope = new HashMap<>();
 			int addtocounter = 0;
 			Index idx = new Index(city, -1);
 			for (Map.Entry<Long, myNode> entry : tmpStoreNodes.entrySet()) {
@@ -886,6 +838,15 @@ public class ExactMethodIndex {
 		}
 
 		return result;
-
 	}
+	
+	
+	public static void main(String args[]) {
+		String city = "LA";
+		ExactMethodKlength emk = new ExactMethodKlength(city);
+		Data queryD = emk.getDataById(1233);
+		System.out.println(queryD);
+		emk.baselineIndex(queryD,10);
+	}
+
 }

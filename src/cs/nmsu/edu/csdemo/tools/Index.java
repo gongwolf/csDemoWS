@@ -56,6 +56,7 @@ public class Index {
 				+ city + "_NodeInfo.txt";
 		this.num_nodes = getLineNumbers();
 		this.pagesize_list = 1024;
+		System.out.println(this.home_folder);
 	}
 
 	public void buildIndex(boolean deleteBeforeBuild) {

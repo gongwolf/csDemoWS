@@ -25,9 +25,9 @@ import cs.nmsu.edu.csdemo.methods.path;
 import cs.nmsu.edu.csdemo.neo4jTools.connector;
 import cs.nmsu.edu.csdemo.tools.GoogleMaps;
 import cs.nmsu.edu.csdemo.tools.Index;
-import cs.nmsu.edu.csdemo.tools.QueryParameters;
 
-public class ApproxRangeIndex {
+public class ApproxRangeKlengthIndex {
+	public ArrayList<path> qqqq = new ArrayList<>();
 	public ArrayList<Result> skyPaths = new ArrayList<>();
 	public ArrayList<Data> sky_hotel = new ArrayList<>();
 	Random r;
@@ -45,18 +45,16 @@ public class ApproxRangeIndex {
 	String home_folder = System.getProperty("user.home");
 	private int hotels_num;
 	private String graphPath;
-	private GraphDatabaseService graphdb;
 	private HashMap<Long, myNode> tmpStoreNodes = new HashMap();
 	private ArrayList<Data> sNodes = new ArrayList<>();
 	private HashSet<Integer> finalDatas = new HashSet<Integer>();
 	private long add_counter; // how many times call the addtoResult function
-	private long pro_add_result_counter; // how many path + hotel combination of the results are generated
+//	private long pro_add_result_counter; // how many path + hotel combination of the results are generated
 	private long sky_add_result_counter; // how many results are taken the addtoskyline operation
 	private Data queryD;
-	private String city;
-	private int num_bus_stop=-1;
+	String city;
 
-	public ApproxRangeIndex(String city, double distance_threshold) {
+	public ApproxRangeKlengthIndex(String city, double distance_threshold) {
 		r = new Random();
 		this.city = city;
 		this.distance_threshold = distance_threshold;
@@ -65,28 +63,7 @@ public class ApproxRangeIndex {
 		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
 	}
 
-	public ApproxRangeIndex(String city, double distance_threshold, QueryParameters qp) {
-		r = new Random();
-		this.city = city;
-		this.distance_threshold = distance_threshold;
-		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
-
-		// If the type parameter is empty, query the whole Points of interesting data
-		// Otherwise, query the specific type of POI data.
-		if (qp.type == null || qp.type.equals("")) {
-			this.treePath = home_folder + "/mydata/DemoProject/data/real_tree_" + city + ".rtr";
-			this.dataPath = home_folder + "/mydata/DemoProject/data/staticNode_real_" + city + ".txt";
-			System.out.println("query without type");
-		} else {
-			this.treePath = home_folder + "/mydata/DemoProject/data/real_tree_" + city + "_" + qp.type + ".rtr";
-			this.dataPath = home_folder + "/mydata/DemoProject/data/staticNode_real_" + city + "_" + qp.type + ".txt";
-			System.out.println("query with type");
-		}
-
-		this.num_bus_stop = qp.num_bus_stop;
-	}
-
-	public ApproxRangeIndex(String city, double distance_threshold, String type) {
+	public ApproxRangeKlengthIndex(String city, double distance_threshold, String type) {
 		r = new Random();
 		this.city = city;
 		this.distance_threshold = distance_threshold;
@@ -101,18 +78,17 @@ public class ApproxRangeIndex {
 		this.finalDatas.clear();
 		this.skyPaths.clear();
 		this.sky_hotel.clear();
-		constants.accessedEdges.clear();
-		constants.accessedNodes.clear();
+		System.out.println("Cleared the temp results");
 	}
 
-	public void baseline(Data queryD) {
+	public void baseline(Data queryD, int k) {
 		clearTempResult();
 		long r1 = System.currentTimeMillis();
 		long s_sum = System.currentTimeMillis();
 		long db_time = System.currentTimeMillis();
 		connector n = new connector(graphPath);
 		n.startDB();
-		this.graphdb = n.getDBObject();
+		n.getDBObject();
 
 		long counter = 0;
 		long addResult_rt = 0;
@@ -125,7 +101,7 @@ public class ApproxRangeIndex {
 
 		this.queryD = queryD;
 		StringBuffer sb = new StringBuffer();
-		sb.append(queryD.getPlaceId() + " ");
+		sb.append(queryD.getPlaceId() +" k:"+k+ " ");
 
 		Skyline sky = new Skyline(treePath);
 
@@ -207,18 +183,7 @@ public class ApproxRangeIndex {
 						ArrayList<path> new_paths = p.expand(n);
 						expasion_rt += (System.nanoTime() - ee);
 						for (path np : new_paths) {
-
-							boolean num_bus_stop_query_flag = false;
-
-							if (this.num_bus_stop != -1) {
-								if (np.rels.size() <= this.num_bus_stop) {
-									num_bus_stop_query_flag = true;
-								}
-							} else {
-								num_bus_stop_query_flag = true;
-							}
-
-							if (num_bus_stop_query_flag) {
+							if (np.rels.size() <= k) {
 								myNode next_n;
 								if (this.tmpStoreNodes.containsKey(np.endNode)) {
 									next_n = tmpStoreNodes.get(np.endNode);
@@ -308,10 +273,11 @@ public class ApproxRangeIndex {
 
 		sb.append("  " + visited_bus_stop + "," + bus_stop_in_result + ","
 				+ (double) bus_stop_in_result / visited_bus_stop + "   " + this.sky_add_result_counter);
+
 		System.out.println(sb.toString());
 	}
 
-	public void baseline(double lat, double lng) {
+	public void baseline(double lat, double lng, int k) {
 //	        long startNode_id = nearestNetworkNode(lat,lng);
 
 		this.tmpStoreNodes.clear();
@@ -322,7 +288,7 @@ public class ApproxRangeIndex {
 		constants.accessedNodes.clear();
 		connector n = new connector(graphPath);
 		n.startDB();
-		this.graphdb = n.getDBObject();
+		n.getDBObject();
 
 		long counter = 0;
 		long addResult_rt = 0;
@@ -412,18 +378,7 @@ public class ApproxRangeIndex {
 						ArrayList<path> new_paths = p.expand(n);
 						expasion_rt += (System.nanoTime() - ee);
 						for (path np : new_paths) {
-
-							boolean num_bus_stop_query_flag = false;
-
-							if (this.num_bus_stop != -1) {
-								if (np.rels.size() <= this.num_bus_stop) {
-									num_bus_stop_query_flag = true;
-								}
-							} else {
-								num_bus_stop_query_flag = true;
-							}
-
-							if (num_bus_stop_query_flag) {
+							if (!np.hasCycle() && np.rels.size() <= k) {
 								myNode next_n;
 								if (this.tmpStoreNodes.containsKey(np.endNode)) {
 									next_n = tmpStoreNodes.get(np.endNode);
@@ -530,7 +485,7 @@ public class ApproxRangeIndex {
 				continue;
 			}
 
-			this.pro_add_result_counter++;
+//			this.pro_add_result_counter++;
 			long rrr = System.nanoTime();
 
 			double[] final_costs = new double[np.costs.length + 3];
@@ -594,7 +549,7 @@ public class ApproxRangeIndex {
 				continue;
 			}
 
-			this.pro_add_result_counter++;
+//			this.pro_add_result_counter++;
 			long rrr = System.nanoTime();
 
 			double[] final_costs = new double[np.costs.length + 3];
@@ -765,7 +720,6 @@ public class ApproxRangeIndex {
 		int counter_in_range = 0;
 
 		try (Transaction tx = connector.graphDB.beginTx()) {
-
 			ResourceIterable<Node> iter = connector.graphDB.getAllNodes();
 			for (Node n : iter) {
 				double lat = (double) n.getProperty("lat");

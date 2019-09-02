@@ -203,8 +203,7 @@ public class QueryServices {
 		updateBeansNodeLocationInformation(result, city);
 		return Response.status(200).entity(result).header("Access-Control-Allow-Origin", "*").build();
 	}
-	
-		
+			
 	@Path("/improvedExactLocationIndex/{city}/{lat}/{lng}")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
@@ -233,7 +232,6 @@ public class QueryServices {
 			
 		}
 	}
-
 	
 	@Path("/improvedExactIndex/{city}/{id}")
 	@GET
@@ -347,7 +345,6 @@ public class QueryServices {
 		}
 	}
 
-	
 	@Path("/approxRangeIndexed/{city}/{type}/{id}/{threshold}")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
@@ -601,14 +598,14 @@ public class QueryServices {
 //		qs.improvedExactQueryByLocationIndex("SF", 37.7784685, -122.3943108);
 //		qs.improvedExactQueryByLocation("NY", 40.9062324,-73.90143);
 //		System.out.println("======================================================");
-		qs.improvedExactQueryById(5079, "NY");
+//		qs.improvedExactQueryById(5079, "NY");
 		qs.improvedExactQueryByIdIndex(5079, "NY");
 //		System.out.println("======================================================");
 //		qs.improvedExactQueryByLocationType("NY", 40.9062324,-73.90143,"food");
 //		qs.improvedExactQueryByLocationTypeIndex("NY", 40.9062324,-73.90143,"food");
 //		System.out.println("======================================================");
 //		qs.improvedExactQueryByIdType(5079, "NY","food");
-//		qs.improvedExactQueryByIdTypeIndex(5079, "NY","food");
+//		qs.improvedExactQueryByIdTypeIndex(1233, "LA","food");
 //
 //		
 //		System.out.println("======================================================");

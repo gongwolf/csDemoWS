@@ -25,6 +25,7 @@ import cs.nmsu.edu.csdemo.methods.path;
 import cs.nmsu.edu.csdemo.neo4jTools.connector;
 import cs.nmsu.edu.csdemo.tools.GoogleMaps;
 import cs.nmsu.edu.csdemo.tools.Index;
+import cs.nmsu.edu.csdemo.tools.QueryParameters;
 
 public class ApproxMixedIndex {
 	private final String graphPath;
@@ -57,6 +58,7 @@ public class ApproxMixedIndex {
 	private Data queryD;
 	private int idx_num;
 	private String city;
+	private QueryParameters qp;
 
 	public ApproxMixedIndex(String city, double distance_threshold) {
 		r = new Random();
@@ -66,17 +68,35 @@ public class ApproxMixedIndex {
 		this.dataPath = home_folder + "/mydata/DemoProject/data/staticNode_real_" + city + ".txt";
 		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
 	}
-	
-	
+
 	public ApproxMixedIndex(String city, double distance_threshold, String type) {
 		r = new Random();
 		this.city = city;
 		this.distance_threshold = distance_threshold;
-		this.treePath = home_folder + "/mydata/DemoProject/data/real_tree_" + city +"_"+type+".rtr";
-	    this.dataPath = home_folder + "/mydata/DemoProject/data/staticNode_real_" + city +"_"+type+ ".txt";
+		this.treePath = home_folder + "/mydata/DemoProject/data/real_tree_" + city + "_" + type + ".rtr";
+		this.dataPath = home_folder + "/mydata/DemoProject/data/staticNode_real_" + city + "_" + type + ".txt";
 		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
 	}
-	
+
+	public ApproxMixedIndex(String city, double distance_threshold, QueryParameters qp) {
+		r = new Random();
+		this.city = city;
+		this.distance_threshold = distance_threshold;
+		this.qp = qp;
+
+		if (qp.type == null || qp.type.equals("")) {
+			this.treePath = home_folder + "/mydata/DemoProject/data/real_tree_" + city + ".rtr";
+			this.dataPath = home_folder + "/mydata/DemoProject/data/staticNode_real_" + city + ".txt";
+		} else {
+			this.treePath = home_folder + "/mydata/DemoProject/data/real_tree_" + city + "_" + qp.getType() + ".rtr";
+			this.dataPath = home_folder + "/mydata/DemoProject/data/staticNode_real_" + city + "_" + qp.getType()
+					+ ".txt";
+		}
+
+		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
+
+	}
+
 	public void baseline(Data queryD) {
 		this.tmpStoreNodes.clear();
 //        System.out.println(queryD);
@@ -165,14 +185,14 @@ public class ApproxMixedIndex {
 		try (Transaction tx = n.graphDB.beginTx()) {
 
 			long rt = System.currentTimeMillis();
-			
-            myNodePriorityQueue mqueue = new myNodePriorityQueue();
-			HashSet<Long> nodesInRange = nearestNetworkNodeInRange(queryD,n);
-	            for(long sid: nodesInRange) {
-		            myNode s = new myNode(queryD, sid, this.distance_threshold,n);
-		            mqueue.add(s);
-		            this.tmpStoreNodes.put(s.id, s);
-	        }
+
+			myNodePriorityQueue mqueue = new myNodePriorityQueue();
+			HashSet<Long> nodesInRange = nearestNetworkNodeInRange(queryD, n);
+			for (long sid : nodesInRange) {
+				myNode s = new myNode(queryD, sid, this.distance_threshold, n);
+				mqueue.add(s);
+				this.tmpStoreNodes.put(s.id, s);
+			}
 
 			while (!mqueue.isEmpty()) {
 
@@ -209,19 +229,32 @@ public class ApproxMixedIndex {
 						expasion_rt += (System.nanoTime() - ee);
 
 						for (path np : new_paths) {
-							myNode next_n;
-							if (this.tmpStoreNodes.containsKey(np.endNode)) {
-								next_n = tmpStoreNodes.get(np.endNode);
+
+							boolean num_bus_stop_query_flag = false;
+
+							if (this.qp.getNum_bus_stop() != -1) {
+								if (np.rels.size() <= this.qp.getNum_bus_stop()) {
+									num_bus_stop_query_flag = true;
+								}
 							} else {
-								next_n = new myNode(queryD, np.endNode, this.distance_threshold, n);
-								this.tmpStoreNodes.put(next_n.id, next_n);
+								num_bus_stop_query_flag = true;
 							}
 
-							// lemma 2
-							if (!(this.tmpStoreNodes.get(np.startNode).distance_q > next_n.distance_q)) {
-								if (next_n.addToSkyline(np) && !next_n.inqueue) {
-									mqueue.add(next_n);
-									next_n.inqueue = true;
+							if (num_bus_stop_query_flag) {
+								myNode next_n;
+								if (this.tmpStoreNodes.containsKey(np.endNode)) {
+									next_n = tmpStoreNodes.get(np.endNode);
+								} else {
+									next_n = new myNode(queryD, np.endNode, this.distance_threshold, n);
+									this.tmpStoreNodes.put(next_n.id, next_n);
+								}
+
+								// lemma 2
+								if (!(this.tmpStoreNodes.get(np.startNode).distance_q > next_n.distance_q)) {
+									if (next_n.addToSkyline(np) && !next_n.inqueue) {
+										mqueue.add(next_n);
+										next_n.inqueue = true;
+									}
 								}
 							}
 						}
@@ -317,7 +350,7 @@ public class ApproxMixedIndex {
 //        System.out.println(sky_add_result_counter + "/" + add_counter + "=" + (double) sky_add_result_counter / add_counter);
 
 	}
-		
+
 	public void baseline(double lat, double lng) {
 		this.tmpStoreNodes.clear();
 //        System.out.println(queryD);
@@ -343,7 +376,7 @@ public class ApproxMixedIndex {
 //        System.out.println("find the nearest bus stop " + nn_rt + "  ms  ");
 
 		StringBuffer sb = new StringBuffer();
-		sb.append("[" + lat + "," + lng+ "]" + " ");
+		sb.append("[" + lat + "," + lng + "]" + " ");
 
 		Skyline sky = new Skyline(treePath);
 
@@ -358,7 +391,6 @@ public class ApproxMixedIndex {
 		long bbs_rt = System.currentTimeMillis() - r1;
 		sNodes = sky.allNodes;
 
-
 		for (Data d : sNodes) {
 			double[] c = new double[constants.path_dimension + 3];
 			c[0] = d.distance_q;
@@ -368,14 +400,12 @@ public class ApproxMixedIndex {
 				for (int i = 4; i < c.length; i++) {
 					c[i] = d_attrs[i - 4];
 				}
-				Result r = new Result(lat,lng, d, c, null);
+				Result r = new Result(lat, lng, d, c, null);
 				addToSkyline(r);
 			}
 		}
-		
-		
-		sb.append(this.sNodes.size() + " " + this.sky_hotel.size() + " "+this.skyPaths.size()+" " );
 
+		sb.append(this.sNodes.size() + " " + this.sky_hotel.size() + " " + this.skyPaths.size() + " ");
 
 		// find the minimum distance from query point to the skyline hotel that dominate
 		// non-skyline hotel cand_d
@@ -402,15 +432,15 @@ public class ApproxMixedIndex {
 			long rt = System.currentTimeMillis();
 
 			myNodePriorityQueue mqueue = new myNodePriorityQueue();
-            
-            HashSet<Long> nodesInRange = nearestNetworkNodeInRange(lat, lng ,n );
-            
-            for(long sid: nodesInRange) {
-	            myNode s = new myNode(lat, lng, sid, this.distance_threshold,n);
+
+			HashSet<Long> nodesInRange = nearestNetworkNodeInRange(lat, lng, n);
+
+			for (long sid : nodesInRange) {
+				myNode s = new myNode(lat, lng, sid, this.distance_threshold, n);
 //	            System.out.println(s);
-	            mqueue.add(s);
-	            this.tmpStoreNodes.put(s.id, s);
-            }
+				mqueue.add(s);
+				this.tmpStoreNodes.put(s.id, s);
+			}
 
 			while (!mqueue.isEmpty()) {
 
@@ -447,19 +477,31 @@ public class ApproxMixedIndex {
 						expasion_rt += (System.nanoTime() - ee);
 
 						for (path np : new_paths) {
-							myNode next_n;
-							if (this.tmpStoreNodes.containsKey(np.endNode)) {
-								next_n = tmpStoreNodes.get(np.endNode);
+							boolean num_bus_stop_query_flag = false;
+
+							if (this.qp.getNum_bus_stop() != -1) {
+								if (np.rels.size() <= this.qp.getNum_bus_stop()) {
+									num_bus_stop_query_flag = true;
+								}
 							} else {
-								next_n = new myNode(lat,lng, np.endNode, this.distance_threshold, n);
-								this.tmpStoreNodes.put(next_n.id, next_n);
+								num_bus_stop_query_flag = true;
 							}
 
-							// lemma 2
-							if (!(this.tmpStoreNodes.get(np.startNode).distance_q > next_n.distance_q)) {
-								if (next_n.addToSkyline(np) && !next_n.inqueue) {
-									mqueue.add(next_n);
-									next_n.inqueue = true;
+							if (num_bus_stop_query_flag) {
+								myNode next_n;
+								if (this.tmpStoreNodes.containsKey(np.endNode)) {
+									next_n = tmpStoreNodes.get(np.endNode);
+								} else {
+									next_n = new myNode(lat, lng, np.endNode, this.distance_threshold, n);
+									this.tmpStoreNodes.put(next_n.id, next_n);
+								}
+
+								// lemma 2
+								if (!(this.tmpStoreNodes.get(np.startNode).distance_q > next_n.distance_q)) {
+									if (next_n.addToSkyline(np) && !next_n.inqueue) {
+										mqueue.add(next_n);
+										next_n.inqueue = true;
+									}
 								}
 							}
 						}
@@ -493,7 +535,7 @@ public class ApproxMixedIndex {
 //                    if (!p.rels.isEmpty() && p.expaned) {
 					if (p.expaned) {
 						long ats = System.nanoTime();
-						boolean f = addToSkylineResultLocation(lat,lng, p, d_list);
+						boolean f = addToSkylineResultLocation(lat, lng, p, d_list);
 						addResult_rt += System.nanoTime() - ats;
 					}
 //                    }
@@ -579,7 +621,7 @@ public class ApproxMixedIndex {
 //					Math.pow(queryD.location[0] - d.location[0], 2) + Math.pow(queryD.location[1] - d.location[1], 2));
 			double end_distance = GoogleMaps.distanceInMeters(my_endNode.locations[0], my_endNode.locations[1],
 					d.location[0], d.location[1]);
-			d.distance_q = GoogleMaps.distanceInMeters(lat, lng, d.location[0],d.location[1]);
+			d.distance_q = GoogleMaps.distanceInMeters(lat, lng, d.location[0], d.location[1]);
 
 			final_costs[0] += end_distance;
 
@@ -590,7 +632,7 @@ public class ApproxMixedIndex {
 					final_costs[i] = d_attrs[i - 4];
 				}
 
-				Result r = new Result(lat,lng, d, final_costs, np);
+				Result r = new Result(lat, lng, d, final_costs, np);
 
 				this.check_add_oper += System.nanoTime() - rrr;
 				d1 += System.nanoTime() - rrr;
@@ -610,7 +652,6 @@ public class ApproxMixedIndex {
 		this.read_data += (System.nanoTime() - d1 - d2 - dsad);
 		return flag;
 	}
-
 
 	private boolean addToSkylineResult(path np, ArrayList<Data> d_list) {
 		this.add_counter++;
@@ -713,7 +754,7 @@ public class ApproxMixedIndex {
 				double log = (double) n.getProperty("log");
 
 //				double temp_distz = Math.sqrt(Math.pow(lat - queryD.location[0], 2) + Math.pow(log - queryD.location[1], 2));
-                double temp_distz = GoogleMaps.distanceInMeters(lat, log, queryD.location[0], queryD.location[1]);
+				double temp_distz = GoogleMaps.distanceInMeters(lat, log, queryD.location[0], queryD.location[1]);
 				if (distz > temp_distz) {
 					nn_node = n;
 					distz = temp_distz;
@@ -728,36 +769,36 @@ public class ApproxMixedIndex {
 //        System.out.println(counter_in_range + " bus stations within hotel " + this.distance_threshold);
 		return nn_node.getId();
 	}
-	
+
 	public HashSet<Long> nearestNetworkNodeInRange(Data queryD, connector connector) {
-    	
-    	HashSet<Long> nodeIDinRange = new HashSet<>();
 
-        Node nn_node = null;
-        double distz = Double.MAX_VALUE;
-        int counter_in_range = 0;
+		HashSet<Long> nodeIDinRange = new HashSet<>();
 
-        try (Transaction tx = connector.graphDB.beginTx()) {
-            ResourceIterable<Node> iter = connector.graphDB.getAllNodes();
-            for (Node n : iter) {
-                double lat = (double) n.getProperty("lat");
-                double log = (double) n.getProperty("log");
+		Node nn_node = null;
+		double distz = Double.MAX_VALUE;
+		int counter_in_range = 0;
+
+		try (Transaction tx = connector.graphDB.beginTx()) {
+			ResourceIterable<Node> iter = connector.graphDB.getAllNodes();
+			for (Node n : iter) {
+				double lat = (double) n.getProperty("lat");
+				double log = (double) n.getProperty("log");
 
 //                double temp_distz = Math.sqrt(Math.pow(lat - queryD.location[0], 2) + Math.pow(log - queryD.location[1], 2));
-                double temp_distz = GoogleMaps.distanceInMeters(lat, log, queryD.location[0], queryD.location[1]);
-                if (distz > temp_distz && temp_distz <= this.distance_threshold) {
-                    nn_node = n;
-                    distz = temp_distz;
-                    nodeIDinRange.add(n.getId());
-                    counter_in_range++;
-                }
-            }
+				double temp_distz = GoogleMaps.distanceInMeters(lat, log, queryD.location[0], queryD.location[1]);
+				if (distz > temp_distz && temp_distz <= this.distance_threshold) {
+					nn_node = n;
+					distz = temp_distz;
+					nodeIDinRange.add(n.getId());
+					counter_in_range++;
+				}
+			}
 
-            tx.success();
-        }
-        return nodeIDinRange;
-    }
-    
+			tx.success();
+		}
+		return nodeIDinRange;
+	}
+
 	public long nearestNetworkNode(double q_lat, double q_lng) {
 
 		Node nn_node = null;
@@ -773,7 +814,7 @@ public class ApproxMixedIndex {
 				double log = (double) n.getProperty("log");
 
 //				double temp_distz = Math.sqrt(Math.pow(lat - q_lat, 2) + Math.pow(log - q_lng, 2));
-                double temp_distz = GoogleMaps.distanceInMeters(lat, log, q_lat, q_lng);
+				double temp_distz = GoogleMaps.distanceInMeters(lat, log, q_lat, q_lng);
 
 				if (distz > temp_distz) {
 					nn_node = n;
@@ -786,35 +827,35 @@ public class ApproxMixedIndex {
 		conn.shutdownDB();
 		return nn_node.getId();
 	}
-	
+
 	public HashSet<Long> nearestNetworkNodeInRange(double q_lat, double q_lng, connector connector) {
-    	HashSet<Long> nodeIDinRange = new HashSet<>();
+		HashSet<Long> nodeIDinRange = new HashSet<>();
 
-        Node nn_node = null;
-        double distz = Double.MAX_VALUE;
-        int counter_in_range = 0;
+		Node nn_node = null;
+		double distz = Double.MAX_VALUE;
+		int counter_in_range = 0;
 
-        try (Transaction tx = connector.graphDB.beginTx()) {
+		try (Transaction tx = connector.graphDB.beginTx()) {
 
-            ResourceIterable<Node> iter = connector.graphDB.getAllNodes();
-            for (Node n : iter) {
-                double lat = (double) n.getProperty("lat");
-                double lng = (double) n.getProperty("log");
+			ResourceIterable<Node> iter = connector.graphDB.getAllNodes();
+			for (Node n : iter) {
+				double lat = (double) n.getProperty("lat");
+				double lng = (double) n.getProperty("log");
 
 //                double temp_distz = Math.sqrt(Math.pow(lat - q_lat, 2) + Math.pow(lng - q_lng, 2));
-                double temp_distz = GoogleMaps.distanceInMeters(lat, lng, q_lat, q_lng);
-                if (distz > temp_distz && temp_distz <= this.distance_threshold) {
-                    nn_node = n;
-                    distz = temp_distz;
-                    counter_in_range++;
-                    nodeIDinRange.add(n.getId());
-                }
-            }
-            tx.success();
-        }
+				double temp_distz = GoogleMaps.distanceInMeters(lat, lng, q_lat, q_lng);
+				if (distz > temp_distz && temp_distz <= this.distance_threshold) {
+					nn_node = n;
+					distz = temp_distz;
+					counter_in_range++;
+					nodeIDinRange.add(n.getId());
+				}
+			}
+			tx.success();
+		}
 
-        return nodeIDinRange;
-    }
+		return nodeIDinRange;
+	}
 
 	public boolean addToSkyline(Result r) {
 		int i = 0;
