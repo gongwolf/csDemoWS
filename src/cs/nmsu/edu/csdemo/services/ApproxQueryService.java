@@ -310,11 +310,13 @@ public class ApproxQueryService {
 		String city = "SF";
 		double lat = 37.7641209;
 		double lng = -122.468116;
-		long distance_threshold = 1000;
-		String type = "food";
-		int num_bus_stop = 0;
+		long distance_threshold = 2000;
+		String type = "lodging";
+		int num_bus_stop = -1;
 		ApproxQueryService aqs = new ApproxQueryService();
-		aqs.ApproxRangeIndexedQueryByLocationQueryParameter(city, lat, lng, distance_threshold, type, num_bus_stop);
+//		aqs.ApproxRangeIndexedQueryByLocationQueryParameter(city, lat, lng, distance_threshold, type, num_bus_stop);
+		aqs.ApproxRangeIndexedQueryByIdQueryParameters(city, 123, distance_threshold, type, num_bus_stop);
+		aqs.ApproxMixedIndexedQueryByIdQueryParameters(city, 123, distance_threshold, type, num_bus_stop);
 	}
 
 }

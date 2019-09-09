@@ -58,11 +58,12 @@ public class ApproxMixedIndex {
 	private Data queryD;
 	private int idx_num;
 	private String city;
-	private QueryParameters qp;
+	private QueryParameters qp=new QueryParameters();
 
 	public ApproxMixedIndex(String city, double distance_threshold) {
 		r = new Random();
 		this.city = city;
+		this.qp.setCity(city);
 		this.distance_threshold = distance_threshold;
 		this.treePath = home_folder + "/mydata/DemoProject/data/real_tree_" + city + ".rtr";
 		this.dataPath = home_folder + "/mydata/DemoProject/data/staticNode_real_" + city + ".txt";
@@ -72,6 +73,7 @@ public class ApproxMixedIndex {
 	public ApproxMixedIndex(String city, double distance_threshold, String type) {
 		r = new Random();
 		this.city = city;
+		this.qp.setCity(city);
 		this.distance_threshold = distance_threshold;
 		this.treePath = home_folder + "/mydata/DemoProject/data/real_tree_" + city + "_" + type + ".rtr";
 		this.dataPath = home_folder + "/mydata/DemoProject/data/staticNode_real_" + city + "_" + type + ".txt";
@@ -80,9 +82,9 @@ public class ApproxMixedIndex {
 
 	public ApproxMixedIndex(String city, double distance_threshold, QueryParameters qp) {
 		r = new Random();
-		this.city = city;
+		this.city=city;
 		this.distance_threshold = distance_threshold;
-		this.qp = qp;
+		this.qp=new QueryParameters(qp);
 
 		if (qp.type == null || qp.type.equals("")) {
 			this.treePath = home_folder + "/mydata/DemoProject/data/real_tree_" + city + ".rtr";
@@ -94,11 +96,15 @@ public class ApproxMixedIndex {
 		}
 
 		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
+		
+		System.out.println(dataPath);
+		System.out.println(treePath);
 
 	}
 
 	public void baseline(Data queryD) {
 		this.tmpStoreNodes.clear();
+		System.out.println(this.qp);
 //        System.out.println(queryD);
 		long r1 = System.currentTimeMillis();
 
@@ -126,14 +132,10 @@ public class ApproxMixedIndex {
 		sb.append(queryD.getPlaceId() + " ");
 
 		Skyline sky = new Skyline(treePath);
-
 		// find the skyline hotels of the whole dataset.
 		sky.findSkyline(queryD);
 
 		this.sky_hotel = new ArrayList<>(sky.sky_hotels);
-//        for (Data sddd : this.sky_hotel) {
-//            System.out.println(sddd.getPlaceId());
-//        }
 //        System.out.println("there are " + this.sky_hotel.size() + " skyline hotels");
 //        System.out.println("-------------------------");
 
@@ -145,7 +147,7 @@ public class ApproxMixedIndex {
 		long bbs_rt = System.currentTimeMillis() - r1;
 		sNodes = sky.skylineStaticNodes;
 
-		sb.append(this.sNodes.size() + " " + this.sky_hotel.size() + " ");
+		sb.append(" #init_BBS:"+this.sNodes.size() + " #init_skyline_hotel:" + this.sky_hotel.size() + " ");
 
 		for (Data d : sNodes) {
 			double[] c = new double[constants.path_dimension + 3];
@@ -157,10 +159,11 @@ public class ApproxMixedIndex {
 					c[i] = d_attrs[i - 4];
 				}
 				Result r = new Result(queryD, d, c, null);
-//                System.out.println(r);
 				addToSkyline(r);
 			}
 		}
+		
+		sb.append(" #init_skyline_paths:"+this.skyPaths.size()+" ");
 
 		// find the minimum distance from query point to the skyline hotel that dominate
 		// non-skyline hotel cand_d
@@ -229,7 +232,6 @@ public class ApproxMixedIndex {
 						expasion_rt += (System.nanoTime() - ee);
 
 						for (path np : new_paths) {
-
 							boolean num_bus_stop_query_flag = false;
 
 							if (this.qp.getNum_bus_stop() != -1) {
@@ -338,6 +340,9 @@ public class ApproxMixedIndex {
 				+ (double) bus_stop_in_result / visited_bus_stop + "   " + this.sky_add_result_counter);
 
 		System.out.println(sb.toString());
+//		for(Result pppp:this.skyPaths) {
+//			System.out.println(pppp);
+//		}
 
 //        System.out.println("====================");
 //        for (Map.Entry<Integer, HashSet<Long>> e : hotels_scope.entrySet()) {

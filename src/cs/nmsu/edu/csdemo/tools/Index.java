@@ -104,6 +104,10 @@ public class Index {
 //		System.out.println(node_info_path);
 	}
 
+	public Index() {
+		// TODO Auto-generated constructor stub
+	}
+
 	public void buildIndex(boolean deleteBeforeBuild) {
 		if (deleteBeforeBuild) {
 			File dataF = new File(home_folder);
@@ -357,27 +361,28 @@ public class Index {
 	}
 
 	public static void main(String[] args) {
-		for (String cy : constants.cityList) {
-			double range = 0;
-			for (int i = 0; i <= 37; i++) {
-				if (i == 0) {
-					range = -1;
-				} else if (i == 1) {
-					range = 200;
-				} else {
-					range += 50;
-				}
+		Index idx = new Index();
+		idx.buildIndexAllCityAndType();
 
-				HashSet<String> typeList = new HashSet<>(Arrays.asList("all", "food", "lodging", "restaurant"));
-				for (String type : typeList) {
-					System.out.println("Builing index for city: " + cy + " for type " + type);
-					Index idx = new Index(cy, range, type);
-					idx.buildIndex(true);
-					System.out.println("Finished Index Build for city: " + cy);
-					System.out.println("====================================================");
-				}
-			}
-
+		String city = "SF";
+		double distance_threshold = 1000;
+		String type = "lodging";
+		QueryParameters qp = new QueryParameters();
+		qp.setCity(city);
+		qp.setNum_bus_stop(-1);
+		qp.setType(type);
+//
+		idx = new Index(qp.city, distance_threshold, qp.type);
+//
+////		idx.buildIndex(true);
+////		System.out.println("Finished Index Build for city: " + qp.type);
+////		System.out.println("====================================================");
+//
+		ArrayList<Data> d_list = idx.read_d_list_from_disk(5567);
+//
+		System.out.println(d_list.size());
+		for (Data d : d_list) {
+			System.out.println(d);
 		}
 
 //		String cy = "NY";
@@ -394,6 +399,33 @@ public class Index {
 //		System.out.println("Finished Index Build for city: " + cy);
 //		System.out.println("====================================================");
 
+	}
+
+	public void buildIndexAllCityAndType() {
+		for (String cy : Arrays.asList("SF", "LA", "NY")) {
+//		for (String cy : Arrays.asList("SF")) {
+			double range = 0;
+			for (int i = 0; i <= 37; i++) {
+				if (i == 0) {
+					range = -1;
+				} else if (i == 1) {
+					range = 200;
+				} else {
+					range += 50;
+				}
+
+				HashSet<String> typeList = new HashSet<>(Arrays.asList("all", "food", "lodging", "restaurant"));
+//				HashSet<String> typeList = new HashSet<>(Arrays.asList("lodging"));
+				for (String type : typeList) {
+					System.out.println("Builing index for city: " + cy + " for type " + type);
+					Index idx = new Index(cy, range, type);
+					idx.buildIndex(true);
+					System.out.println("Finished Index Build for city: " + cy);
+					System.out.println("====================================================");
+				}
+			}
+
+		}
 	}
 
 	public long getLineNumbers() {

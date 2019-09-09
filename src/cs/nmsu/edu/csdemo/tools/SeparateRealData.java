@@ -119,13 +119,18 @@ public class SeparateRealData {
 								this.list.add(poi_obj.g_p_id);
 
 								Data d = new Data(dimension);
+								Data type_d = new Data(dimension);
+
 								d.setPlaceId(poi_obj.placeID);
+								type_d.setPlaceId(type_counter);
+								
 								d.setLocation(poi_obj.locations);
+								type_d.setLocation(poi_obj.locations);
 
 								for (int i = 0; i < poi_obj.data.length; i++) {
 									// if there is no-value, generate a random value follow the Gaussian
 									// distribution.
-									if (poi_obj.data[i] == -1) {
+									if (poi_obj.data[i] == -1 || poi_obj.data[i] == 0) {
 										poi_obj.data[i] = getGaussian(2.5, 5 / 6);
 									}
 
@@ -133,6 +138,8 @@ public class SeparateRealData {
 								}
 
 								d.setData(poi_obj.data);
+								type_d.setData(poi_obj.data);
+
 								bw.write(poi_obj.placeID + "," + poi_obj.locations[0] + "," + poi_obj.locations[1] + ","
 										+ poi_obj.data[0] + "," + poi_obj.data[1] + "," + poi_obj.data[2] + ","
 										+ poi_obj.g_p_id +","+poi_obj.g_p_name+ "\n");
@@ -145,7 +152,9 @@ public class SeparateRealData {
 										type_counter + "," + poi_obj.locations[0] + "," + poi_obj.locations[1] + ","
 												+ poi_obj.data[0] + "," + poi_obj.data[1] + "," + poi_obj.data[2]);
 								rt.insert(d);
-								type_rt.insert(d);
+								
+							
+								type_rt.insert(type_d);
 								type_counter++;
 							}
 

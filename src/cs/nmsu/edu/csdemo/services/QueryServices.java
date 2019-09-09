@@ -52,7 +52,6 @@ public class QueryServices {
 		}
 
 		updateBeansNodeLocationInformation(result, city);
-//		return result;
 		return Response.status(200).entity(result).header("Access-Control-Allow-Origin", "*").build();
 	}
 	
