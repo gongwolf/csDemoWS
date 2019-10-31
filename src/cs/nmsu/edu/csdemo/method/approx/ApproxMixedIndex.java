@@ -67,7 +67,9 @@ public class ApproxMixedIndex {
 		this.distance_threshold = distance_threshold;
 		this.treePath = home_folder + "/mydata/DemoProject/data/real_tree_" + city + ".rtr";
 		this.dataPath = home_folder + "/mydata/DemoProject/data/staticNode_real_" + city + ".txt";
-		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
+//		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
+		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Gaussian/databases/graph.db";
+
 	}
 
 	public ApproxMixedIndex(String city, double distance_threshold, String type) {
@@ -77,7 +79,9 @@ public class ApproxMixedIndex {
 		this.distance_threshold = distance_threshold;
 		this.treePath = home_folder + "/mydata/DemoProject/data/real_tree_" + city + "_" + type + ".rtr";
 		this.dataPath = home_folder + "/mydata/DemoProject/data/staticNode_real_" + city + "_" + type + ".txt";
-		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
+//		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
+		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Gaussian/databases/graph.db";
+
 	}
 
 	public ApproxMixedIndex(String city, double distance_threshold, QueryParameters qp) {
@@ -95,7 +99,9 @@ public class ApproxMixedIndex {
 					+ ".txt";
 		}
 
-		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
+//		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
+		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Gaussian/databases/graph.db";
+
 		
 		System.out.println(dataPath);
 		System.out.println(treePath);

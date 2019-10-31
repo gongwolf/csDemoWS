@@ -44,7 +44,7 @@ public class ApproxQueryService {
 		qp.setNum_bus_stop(num_bus_stop);
 		qp.setType(type);
 
-		System.out.println(qp);
+		System.out.println(qp+" distance_threshold:"+distance_threshold);
 
 		if (!constants.cityList.contains(qp.getCity())) {
 			return null;
@@ -99,7 +99,7 @@ public class ApproxQueryService {
 			qp.setCity(city);
 			qp.setNum_bus_stop(num_bus_stop);
 			qp.setType(type);
-			System.out.println(qp);
+			System.out.println(qp+" distance_threshold:"+distance_threshold);
 
 			ApproxRangeIndex approx_range_index = new ApproxRangeIndex(city, distance_threshold, qp);
 			approx_range_index.baseline(lat, lng);
@@ -128,7 +128,7 @@ public class ApproxQueryService {
 		qp.setNum_bus_stop(num_bus_stop);
 		qp.setType(type);
 
-		System.out.println(qp);
+		System.out.println(qp+" distance_threshold:"+distance_threshold);
 
 		if (!constants.cityList.contains(qp.getCity())) {
 			return null;
@@ -181,7 +181,7 @@ public class ApproxQueryService {
 			qp.setCity(city);
 			qp.setNum_bus_stop(num_bus_stop);
 			qp.setType(type);
-			System.out.println(qp);
+			System.out.println(qp+" distance_threshold:"+distance_threshold);
 
 			ApproxMixedIndex approx_mixed_index = new ApproxMixedIndex(city, distance_threshold, qp);
 			approx_mixed_index.baseline(lat, lng);
@@ -198,7 +198,7 @@ public class ApproxQueryService {
 
 	private void updateBeansNodeLocationInformation(ArrayList<ResultBean> result, String city) {
 		String home_folder = System.getProperty("user.home");
-		String graphPath = home_folder + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
+		String graphPath = home_folder + "/neo4j334/testdb_" + city + "_Gaussian/databases/graph.db";
 		connector n = new connector(graphPath);
 		n.startDB();
 		try (Transaction tx = n.graphDB.beginTx()) {
@@ -307,16 +307,16 @@ public class ApproxQueryService {
 	}
 
 	public static void main(String args[]) {
-		String city = "SF";
+		String city = "LA";
 		double lat = 37.7641209;
 		double lng = -122.468116;
-		long distance_threshold = 2000;
-		String type = "lodging";
+		long distance_threshold = 200;
+		String type = "food";
 		int num_bus_stop = -1;
 		ApproxQueryService aqs = new ApproxQueryService();
 //		aqs.ApproxRangeIndexedQueryByLocationQueryParameter(city, lat, lng, distance_threshold, type, num_bus_stop);
-		aqs.ApproxRangeIndexedQueryByIdQueryParameters(city, 123, distance_threshold, type, num_bus_stop);
-		aqs.ApproxMixedIndexedQueryByIdQueryParameters(city, 123, distance_threshold, type, num_bus_stop);
+		aqs.ApproxRangeIndexedQueryByIdQueryParameters(city, 1233, distance_threshold, type, num_bus_stop);
+//		aqs.ApproxMixedIndexedQueryByIdQueryParameters(city, 123, distance_threshold, type, num_bus_stop);
 	}
 
 }

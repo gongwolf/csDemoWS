@@ -7,6 +7,8 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexManager;
 
+import cs.nmsu.edu.csdemo.methods.constants;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -14,15 +16,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class CreateDB {
-    String DBBase = "/home/gqxwolf/mydata/projectData/un_testGraph2000_5/data/";
-    String DB_PATH = "/home/gqxwolf/neo4j323/test_un_db2000_5/databases/graph.db";
+    String DBBase = constants.home_folder+"/mydata/projectData/un_testGraph2000_5/data/";
+    String DB_PATH = constants.home_folder+"/neo4j334/test_un_db2000_5/databases/graph.db";
     String NodesPath = DBBase + "NodeInfo.txt";
     String SegsPath = DBBase + "SegInfo.txt";
     private GraphDatabaseService graphdb = null;
 
     public CreateDB(int graphsize, int degree) {
-        this.DBBase = "/home/gqxwolf/mydata/projectData/testGraph" + graphsize + "_" + degree + "/data/";
-        this.DB_PATH = "/home/gqxwolf/neo4j334/testdb" + graphsize + "_" + degree + "/databases/graph.db";
+        this.DBBase = constants.home_folder+"/mydata/projectData/testGraph" + graphsize + "_" + degree + "/data/";
+        this.DB_PATH = constants.home_folder+"/neo4j334/testdb" + graphsize + "_" + degree + "/databases/graph.db";
 //        this.DB_PATH = "/home/gqxwolf/neo4j334/testdb_" + "SF" + "/databases/graph.db";
 //        this.DBBase = "/home/gqxwolf/mydata/projectData/testGraph_real_50/data/";
         //this.DBBase = "/home/gqxwolf/mydata/projectData/testGraph_real/data/";
@@ -38,8 +40,8 @@ public class CreateDB {
 
     public CreateDB() {
 
-        this.DB_PATH = "/home/gqxwolf/neo4j334/testdb_" + "LA" + "_Random/databases/graph.db";
-        this.DBBase = "/home/gqxwolf/mydata/projectData/testGraph_real_50_Random/data/";
+        this.DB_PATH = constants.home_folder+"/neo4j334/testdb_" + "LA" + "_Random/databases/graph.db";
+        this.DBBase = constants.home_folder+"/mydata/projectData/testGraph_real_50_Random/data/";
         NodesPath = DBBase + "LA_NodeInfo.txt";
         SegsPath = DBBase + "LA_SegInfo.txt";
 

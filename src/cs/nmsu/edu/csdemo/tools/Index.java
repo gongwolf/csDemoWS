@@ -48,7 +48,8 @@ public class Index {
 			this.home_folder = base + "/" + city + "_index_all/";
 		}
 
-		this.graphPath = System.getProperty("user.home") + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
+//		this.graphPath = System.getProperty("user.home") + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
+		this.graphPath = System.getProperty("user.home") + "/neo4j334/testdb_" + city + "_Gaussian/databases/graph.db";
 		this.treePath = System.getProperty("user.home") + "/mydata/DemoProject/data/real_tree_" + city + ".rtr";
 		this.dataPath = System.getProperty("user.home") + "/mydata/DemoProject/data/staticNode_real_" + city + ".txt";
 
@@ -79,7 +80,8 @@ public class Index {
 
 		System.out.println(home_folder);
 
-		this.graphPath = System.getProperty("user.home") + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
+//		this.graphPath = System.getProperty("user.home") + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
+		this.graphPath = System.getProperty("user.home") + "/neo4j334/testdb_" + city + "_Gaussian/databases/graph.db";
 		if (type.equals("all") || type == null || type.equals("")) {
 			this.treePath = System.getProperty("user.home") + "/mydata/DemoProject/data/real_tree_" + city + ".rtr";
 			this.dataPath = System.getProperty("user.home") + "/mydata/DemoProject/data/staticNode_real_" + city

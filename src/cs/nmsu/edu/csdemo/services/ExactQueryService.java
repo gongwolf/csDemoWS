@@ -111,7 +111,7 @@ public class ExactQueryService {
 
 	private void updateBeansNodeLocationInformation(ArrayList<ResultBean> result, String city) {
 		String home_folder = System.getProperty("user.home");
-		String graphPath = home_folder + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
+		String graphPath = home_folder + "/neo4j334/testdb_" + city + "_Gaussian/databases/graph.db";
 		connector n = new connector(graphPath);
 		n.startDB();
 		try (Transaction tx = n.graphDB.beginTx()) {

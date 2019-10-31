@@ -15,10 +15,11 @@ import java.util.Iterator;
 import java.util.Map;
 
 public class connector {
+	String home_folder = System.getProperty("user.home");
     public GraphDatabaseService graphDB;
     public ArrayList<String> propertiesName = new ArrayList<>();
-    public String DB_PATH = "/home/gqxwolf/neo4j334/testdb1000000_4/databases/graph.db";
-    String conFile = "/home/gqxwolf/neo4j334/conf/neo4j.conf";
+    public String DB_PATH = home_folder+"/neo4j334/testdb1000000_4/databases/graph.db";
+    String conFile = home_folder+"/neo4j334/conf/neo4j.conf";
 
 
     public connector(String DB_PATH) {

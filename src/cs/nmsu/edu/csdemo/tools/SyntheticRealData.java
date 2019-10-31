@@ -9,14 +9,15 @@ import cs.nmsu.edu.csdemo.RstarTree.Constants;
 import cs.nmsu.edu.csdemo.RstarTree.Data;
 import cs.nmsu.edu.csdemo.RstarTree.Node;
 import cs.nmsu.edu.csdemo.RstarTree.RTree;
+import cs.nmsu.edu.csdemo.methods.constants;
 
 public class SyntheticRealData {
 	int dimension;
 	Random r = new Random(System.nanoTime());
-	String path_base = "/home/gqxwolf/mydata/DemoProject/data/"; // the folder that stores the bus and points of
+	String path_base = constants.home_folder+"/mydata/DemoProject/data/"; // the folder that stores the bus and points of
 																	// interest data
 	String poi_data = path_base + "IOP_data";
-	String tree_path = "/home/gqxwolf/mydata/DemoProject/data/real_tree.rtr"; // the place of the Rtree file
+	String tree_path = constants.home_folder+"/mydata/DemoProject/data/real_tree.rtr"; // the place of the Rtree file
 	String[] cities = new String[] { "New York", "San Francisco", "Los Angeles" };
 	String[] abbr_cities = new String[] { "NY", "SF", "LA" };
 	String[] p_types = new String[] { "food", "lodging", "restaurant" };
@@ -57,11 +58,11 @@ public class SyntheticRealData {
 			this.max_id = 0;
 			long counter = 0;
 
-			File file = new File("/home/gqxwolf/mydata/DemoProject/data/staticNode_real_" + abbr_city + ".txt"); // store
+			File file = new File(constants.home_folder+"/mydata/DemoProject/data/staticNode_real_" + abbr_city + ".txt"); // store
 																													// the
 			// hotel
 			// information
-			String t_path = "/home/gqxwolf/mydata/DemoProject/data/real_tree_" + abbr_city + ".rtr";
+			String t_path = constants.home_folder+"/mydata/DemoProject/data/real_tree_" + abbr_city + ".rtr";
 			RTree rt = new RTree(t_path, Constants.BLOCKLENGTH, Constants.CACHESIZE, dimension);
 
 			if (file.exists()) {

@@ -62,14 +62,16 @@ public class ApproxRangeIndex {
 		this.distance_threshold = distance_threshold;
 		this.treePath = home_folder + "/mydata/DemoProject/data/real_tree_" + city + ".rtr";
 		this.dataPath = home_folder + "/mydata/DemoProject/data/staticNode_real_" + city + ".txt";
-		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
+//		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
+		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Gaussian/databases/graph.db";
 	}
 
 	public ApproxRangeIndex(String city, double distance_threshold, QueryParameters qp) {
 		r = new Random();
 		this.city = city;
 		this.distance_threshold = distance_threshold;
-		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
+//		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
+		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Gaussian/databases/graph.db";
 
 		// If the type parameter is empty, query the whole Points of interesting data
 		// Otherwise, query the specific type of POI data.
@@ -93,7 +95,8 @@ public class ApproxRangeIndex {
 		this.distance_threshold = distance_threshold;
 		this.treePath = home_folder + "/mydata/DemoProject/data/real_tree_" + city + "_" + type + ".rtr";
 		this.dataPath = home_folder + "/mydata/DemoProject/data/staticNode_real_" + city + "_" + type + ".txt";
-		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
+		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Gaussian/databases/graph.db";
+//		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
 	}
 
 	public void clearTempResult() {
@@ -195,6 +198,7 @@ public class ApproxRangeIndex {
 				myNode s = new myNode(queryD, sid, this.distance_threshold, n);
 				mqueue.add(s);
 				this.tmpStoreNodes.put(s.id, s);
+				System.out.println("add starting node : "+s);
 			}
 
 			while (!mqueue.isEmpty()) {

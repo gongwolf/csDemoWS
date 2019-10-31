@@ -65,7 +65,9 @@ public class ExactMethodIndex {
 	public ExactMethodIndex(String city) {
 		this.city = city;
 		r = new Random(System.nanoTime());
-		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
+//		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
+		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Gaussian/databases/graph.db";
+
 		this.treePath = home_folder + "/mydata/DemoProject/data/real_tree_" + city + ".rtr";
 		this.dataPath = home_folder + "/mydata/DemoProject/data/staticNode_real_" + city + ".txt";
 		this.hotels_num = getNumberOfHotels();
@@ -75,8 +77,9 @@ public class ExactMethodIndex {
 	public ExactMethodIndex(String city, QueryParameters qp) {
 		this.city = city;
 		r = new Random(System.nanoTime());
-		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
-		
+//		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
+		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Gaussian/databases/graph.db";
+
 		if(qp.getType().equals("")||qp.getType()==null) {
 			this.treePath = home_folder + "/mydata/DemoProject/data/real_tree_" + city + ".rtr";
 			this.dataPath = home_folder + "/mydata/DemoProject/data/staticNode_real_" + city + ".txt";
@@ -96,7 +99,9 @@ public class ExactMethodIndex {
 	public ExactMethodIndex(String city, String type) {
 		this.city = city;
 		r = new Random(System.nanoTime());
-		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
+//		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Random/databases/graph.db";
+		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Gaussian/databases/graph.db";
+
 		this.treePath = home_folder + "/mydata/DemoProject/data/real_tree_" + city + "_" + type + ".rtr";
 		this.dataPath = home_folder + "/mydata/DemoProject/data/staticNode_real_" + city + "_" + type + ".txt";
 		this.hotels_num = getNumberOfHotels();

@@ -4,11 +4,13 @@ import javafx.util.Pair;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
 
+import cs.nmsu.edu.csdemo.methods.constants;
+
 import java.io.*;
 import java.util.*;
 
 public class generateGraph {
-    String DBBase = "/home/gqxwolf/mydata/projectData/testGraph10_2/data/";
+    String DBBase = constants.home_folder+"/mydata/projectData/testGraph10_2/data/";
     String EdgesPath = DBBase + "SegInfo.txt";
     String NodePath = DBBase + "NodeInfo.txt";
 
@@ -20,7 +22,7 @@ public class generateGraph {
         this.numberofEdges = (int) Math.round(numberNodes * (degree));
         this.numberofDimens = dimensions;
 
-        this.DBBase = "/home/gqxwolf/mydata/projectData/testGraph" + graphsize + "_" + degree + "/data/";
+        this.DBBase = constants.home_folder+"/mydata/projectData/testGraph" + graphsize + "_" + degree + "/data/";
         EdgesPath = DBBase + "SegInfo.txt";
         NodePath = DBBase + "NodeInfo.txt";
 
