@@ -216,7 +216,7 @@ public class ApproxQueryService {
 				}
 				rbean.end_name = getLocationNameByID(rbean.end, city);
 				double[] querycosts = queryData.getData();
-				System.out.println(querycosts.length);
+				//System.out.println(querycosts.length);
 				System.arraycopy(querycosts, 0, rbean.querycosts, 4, querycosts.length);
 			}
 			tx.success();

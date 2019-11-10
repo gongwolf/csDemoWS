@@ -65,7 +65,8 @@ public class Index {
 
 	public Index(String city, double distance_threshold, String type) {
 		this.distance_threshold = distance_threshold;
-		if (distance_threshold != -1) {
+		if (distance_threshold != -1 && distance_threshold % 50 == 0 && distance_threshold <= 2000
+				&& 0 < distance_threshold) {
 			if (type.equals("all") || type == null || type.equals("")) {
 				this.home_folder = base + "/" + city + "_index_" + (int) distance_threshold + "/";
 			} else {
@@ -367,26 +368,26 @@ public class Index {
 		Index idx = new Index();
 		idx.buildIndexAllCityAndType();
 
-		String city = "SF";
-		double distance_threshold = 1000;
-		String type = "lodging";
-		QueryParameters qp = new QueryParameters();
-		qp.setCity(city);
-		qp.setNum_bus_stop(-1);
-		qp.setType(type);
-//
-		idx = new Index(qp.city, distance_threshold, qp.type);
-//
-////		idx.buildIndex(true);
-////		System.out.println("Finished Index Build for city: " + qp.type);
-////		System.out.println("====================================================");
-//
-		ArrayList<Data> d_list = idx.read_d_list_from_disk(5567);
-//
-		System.out.println(d_list.size());
-		for (Data d : d_list) {
-			System.out.println(d);
-		}
+//		String city = "SF";
+//		double distance_threshold = 1000;
+//		String type = "lodging";
+//		QueryParameters qp = new QueryParameters();
+//		qp.setCity(city);
+//		qp.setNum_bus_stop(-1);
+//		qp.setType(type);
+////
+//		idx = new Index(qp.city, distance_threshold, qp.type);
+////
+//////		idx.buildIndex(true);
+//////		System.out.println("Finished Index Build for city: " + qp.type);
+//////		System.out.println("====================================================");
+////
+//		ArrayList<Data> d_list = idx.read_d_list_from_disk(5567);
+////
+//		System.out.println(d_list.size());
+//		for (Data d : d_list) {
+//			System.out.println(d);
+//		}
 
 //		String cy = "NY";
 //		System.out.println("Builing index for city: "+ cy);
