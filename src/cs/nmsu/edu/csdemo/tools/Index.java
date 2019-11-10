@@ -42,7 +42,8 @@ public class Index {
 	public Index(String city, double distance_threshold) {
 //		this.distance_threshold = 0.0105;
 		this.distance_threshold = distance_threshold;
-		if (distance_threshold != -1) {
+		if (distance_threshold != -1 && distance_threshold % 50 == 0 && distance_threshold <= 2000
+				&& 0 < distance_threshold) {
 			this.home_folder = base + "/" + city + "_index_" + (int) distance_threshold + "/";
 		} else {
 			this.home_folder = base + "/" + city + "_index_all/";

@@ -84,7 +84,7 @@ public class ExactQueryService {
 			return null;
 		}
 
-		int isAIOP = isAInterestingOfPoint(city, lat, lng);
+		int isAIOP = isAInterestingOfPoint(city, lat, lng, type);
 
 		if (isAIOP != -1) {
 			int id = isAIOP;
@@ -178,39 +178,45 @@ public class ExactQueryService {
 	}
 
 	// check whether the given location is a IOP in the data set.
-	private int isAInterestingOfPoint(String city, double lat, double lng) {
-		int isIOP = -1;
-		double min_distance = Double.MAX_VALUE;
-		String datapath = this.homepath + "/mydata/DemoProject/data/staticNode_real_" + city + ".txt";
-		System.out.println("find the location from the file " + datapath);
-		double[] targetLocations = new double[2];
-
-		BufferedReader reader;
-		try {
-			reader = new BufferedReader(new FileReader(datapath));
-			String line = reader.readLine();
-			while (line != null) {
-				double lat2 = Double.parseDouble(line.split(",")[1]);
-				double lng2 = Double.parseDouble(line.split(",")[2]);
-				double distance = constants.distanceInMeters(lat, lng, lat2, lng2);
-				if (distance < min_distance) {
-					min_distance = distance;
-					if (distance < t_distance) {
-						isIOP = Integer.parseInt(line.split(",")[0]);
-						targetLocations[0] = lat2;
-						targetLocations[1] = lng2;
-					}
-				}
-				line = reader.readLine();
+		private int isAInterestingOfPoint(String city, double lat, double lng, String type) {
+			String datapath;
+			int isIOP = -1;
+			double min_distance = Double.MAX_VALUE;
+			if (!type.equals("") && type != null) {
+				datapath = this.homepath + "/mydata/DemoProject/data/staticNode_real_" + city + "_" + type + ".txt";
+			} else {
+				datapath = this.homepath + "/mydata/DemoProject/data/staticNode_real_" + city + ".txt";
 			}
-			reader.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 
-		System.out.println(isIOP + " -->> distance to query location is " + (long) min_distance + "m   " + lat + " "
-				+ lng + "     " + targetLocations[0] + " " + targetLocations[1]);
-		return isIOP;
-	}
+			System.out.println("find the location from the file " + datapath);
+			double[] targetLocations = new double[2];
+
+			BufferedReader reader;
+			try {
+				reader = new BufferedReader(new FileReader(datapath));
+				String line = reader.readLine();
+				while (line != null) {
+					double lat2 = Double.parseDouble(line.split(",")[1]);
+					double lng2 = Double.parseDouble(line.split(",")[2]);
+					double distance = constants.distanceInMeters(lat, lng, lat2, lng2);
+					if (distance < min_distance) {
+						min_distance = distance;
+						if (distance < t_distance) {
+							isIOP = Integer.parseInt(line.split(",")[0]);
+							targetLocations[0] = lat2;
+							targetLocations[1] = lng2;
+						}
+					}
+					line = reader.readLine();
+				}
+				reader.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+			System.out.println(isIOP + " -->> distance to query location is " + (long) min_distance + "m   " + lat + " "
+					+ lng + "     " + targetLocations[0] + " " + targetLocations[1]);
+			return isIOP;
+		}
 
 }

@@ -255,7 +255,7 @@ public class ExactMethodIndex {
 				startNode = nearestNetworkNode(queryD);
 			}
 
-//			System.out.println("--------------------------------------------------");
+			System.out.println("--------------Graph Traversal Finished------------------");
 
 			long exploration_rt = System.currentTimeMillis() - rt;
 //            System.out.println("expansion finished " + exploration_rt);
@@ -474,7 +474,7 @@ public class ExactMethodIndex {
 				startNode = nearestNetworkNode(lat, lng);
 			}
 
-//			System.out.println("------------------------------------------------------");
+			System.out.println("---------------Graph Traversal are finished----------------");
 
 			long exploration_rt = System.currentTimeMillis() - rt;
 //            System.out.println("expansion finished " + exploration_rt);

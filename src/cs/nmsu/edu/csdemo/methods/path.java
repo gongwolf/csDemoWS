@@ -40,22 +40,21 @@ public class path {
 	}
 
 	public path(path old_path, Relationship rel) {
-
 		this.costs = new double[constants.path_dimension];
 		this.startNode = old_path.startNode;
 		this.endNode = rel.getEndNodeId();
 
-		this.nodes = new ArrayList<>();
-		for (long n : old_path.nodes) {
-//			this.nodes.add(getLongObject_Node(n));
-			this.nodes.add(n);
-		}
+		this.nodes = new ArrayList<>(old_path.nodes);
+//		for (long n : old_path.nodes) {
+////			this.nodes.add(getLongObject_Node(n));
+//			this.nodes.add(n);
+//		}
 //
-		this.rels = new ArrayList<>();
-		for (long e : old_path.rels) {
-//			this.rels.add(getLongObject_Edge(e));
-			this.rels.add(e);
-		}
+		this.rels = new ArrayList<>(old_path.rels);
+//		for (long e : old_path.rels) {
+////			this.rels.add(getLongObject_Edge(e));
+//			this.rels.add(e);
+//		}
 
 		this.propertiesName = new ArrayList<>(old_path.propertiesName);
 
@@ -65,9 +64,7 @@ public class path {
 //        this.rels.add(getLongObject_Edge(rel.getId()));
 		this.rels.add(rel.getId());
 		this.nodes.add(this.endNode);
-
 		System.arraycopy(old_path.costs, 0, this.costs, 0, this.costs.length);
-
 		calculateCosts(rel);
 	}
 

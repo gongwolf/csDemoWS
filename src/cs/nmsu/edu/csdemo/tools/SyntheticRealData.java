@@ -60,8 +60,7 @@ public class SyntheticRealData {
 
 			File file = new File(constants.home_folder+"/mydata/DemoProject/data/staticNode_real_" + abbr_city + ".txt"); // store
 																													// the
-			// hotel
-			// information
+			// hotel information
 			String t_path = constants.home_folder+"/mydata/DemoProject/data/real_tree_" + abbr_city + ".rtr";
 			RTree rt = new RTree(t_path, Constants.BLOCKLENGTH, Constants.CACHESIZE, dimension);
 
