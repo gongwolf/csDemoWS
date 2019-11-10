@@ -148,9 +148,9 @@ public class SeparateRealData {
 										+ poi_obj.data[0] + "," + poi_obj.data[1] + "," + poi_obj.data[2] + ","
 										+ poi_obj.g_p_id +","+poi_obj.g_p_name+ "\n");
 								
-								System.out.println(
-										type_counter + "," + poi_obj.locations[0] + "," + poi_obj.locations[1] + ","
-												+ poi_obj.data[0] + "," + poi_obj.data[1] + "," + poi_obj.data[2]);
+//								System.out.println(
+//										type_counter + "," + poi_obj.locations[0] + "," + poi_obj.locations[1] + ","
+//												+ poi_obj.data[0] + "," + poi_obj.data[1] + "," + poi_obj.data[2]);
 								rt.insert(d);
 								
 							

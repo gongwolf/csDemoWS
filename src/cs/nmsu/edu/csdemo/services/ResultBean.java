@@ -50,6 +50,9 @@ public class ResultBean {
 		}
 
 		this.costs = r.costs;
+		this.costs[4]= 5-r.costs[4];
+		this.costs[5]= r.costs[5];
+		this.costs[6]= 10-r.costs[6];
 	}
 
 }

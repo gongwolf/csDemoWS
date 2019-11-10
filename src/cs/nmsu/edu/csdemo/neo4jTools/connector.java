@@ -93,6 +93,7 @@ public class connector {
                     Map<String, Object> pnamemap = rel.getAllProperties();
                     for (Map.Entry<String, Object> entry : pnamemap.entrySet()) {
                         propertiesName.add(entry.getKey());
+//                        System.out.println(entry.getKey());
                     }
                     break;
                 }

@@ -103,8 +103,8 @@ public class ApproxMixedIndex {
 		this.graphPath = home_folder + "/neo4j334/testdb_" + city + "_Gaussian/databases/graph.db";
 
 		
-		System.out.println(dataPath);
-		System.out.println(treePath);
+//		System.out.println(dataPath);
+//		System.out.println(treePath);
 
 	}
 
@@ -536,6 +536,7 @@ public class ApproxMixedIndex {
 //            System.out.println(sk_counter+"~~~~~");
 
 			Index idx = new Index(qp.city, this.distance_threshold,qp.type);
+//			System.out.println("!@@@@@ "+qp.city+"  "+this.distance_threshold+" "+qp.type);
 			for (Map.Entry<Long, myNode> entry : tmpStoreNodes.entrySet()) {
 				long t_index_s = System.nanoTime();
 				myNode my_n = entry.getValue();
@@ -633,6 +634,7 @@ public class ApproxMixedIndex {
 			double end_distance = GoogleMaps.distanceInMeters(my_endNode.locations[0], my_endNode.locations[1],
 					d.location[0], d.location[1]);
 			d.distance_q = GoogleMaps.distanceInMeters(lat, lng, d.location[0], d.location[1]);
+//			System.out.println(d);
 
 			final_costs[0] += end_distance;
 

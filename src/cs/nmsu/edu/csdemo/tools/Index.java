@@ -365,29 +365,53 @@ public class Index {
 	}
 
 	public static void main(String[] args) {
-		Index idx = new Index();
-		idx.buildIndexAllCityAndType();
+//		Index idx = new Index();
+//		idx.buildIndexAllCityAndType();
+		
+		
+//		String cy = "SF";
+//		double range = 500;
+//		HashSet<String> typeList = new HashSet<>(Arrays.asList("all", "food", "lodging", "restaurant"));
+////		HashSet<String> typeList = new HashSet<>(Arrays.asList("lodging"));
+//		for (String type : typeList) {
+//			System.out.println("Builing index for city: " + cy + " for type " + type);
+//			Index idx = new Index(cy, range, type);
+//			idx.buildIndex(true);
+//			System.out.println("Finished Index Build for city: " + cy);
+//			System.out.println("====================================================");
+//		}
+//		
+//		cy = "SF";
+//		range = -1;
+////		HashSet<String> typeList = new HashSet<>(Arrays.asList("lodging"));
+//		for (String type : typeList) {
+//			System.out.println("Builing index for city: " + cy + " for type " + type);
+//			Index idx = new Index(cy, range, type);
+//			idx.buildIndex(true);
+//			System.out.println("Finished Index Build for city: " + cy);
+//			System.out.println("====================================================");
+//		}
 
-//		String city = "SF";
-//		double distance_threshold = 1000;
-//		String type = "lodging";
-//		QueryParameters qp = new QueryParameters();
-//		qp.setCity(city);
-//		qp.setNum_bus_stop(-1);
-//		qp.setType(type);
-////
-//		idx = new Index(qp.city, distance_threshold, qp.type);
+		String city = "SF";
+		double distance_threshold = 500;
+		String type = "lodging";
+		QueryParameters qp = new QueryParameters();
+		qp.setCity(city);
+		qp.setNum_bus_stop(-1);
+		qp.setType(type);
+//
+		Index idx = new Index(qp.city, distance_threshold, qp.type);
 ////
 //////		idx.buildIndex(true);
 //////		System.out.println("Finished Index Build for city: " + qp.type);
 //////		System.out.println("====================================================");
 ////
-//		ArrayList<Data> d_list = idx.read_d_list_from_disk(5567);
+		ArrayList<Data> d_list = idx.read_d_list_from_disk(5567);
 ////
-//		System.out.println(d_list.size());
-//		for (Data d : d_list) {
-//			System.out.println(d);
-//		}
+		System.out.println(d_list.size());
+		for (Data d : d_list) {
+			System.out.println(d);
+		}
 
 //		String cy = "NY";
 //		System.out.println("Builing index for city: "+ cy);

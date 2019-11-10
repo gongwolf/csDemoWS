@@ -35,16 +35,14 @@ public class ApproxQueryService {
 			@PathParam("id") int queryPlaceId, @PathParam("threshold") double distance_threshold,
 			@PathParam("type") String type, @PathParam("num_bus_stop") int num_bus_stop) {
 
-		
 		System.out.println("\n Call the function approxRangeIndexedById ");
 
-		
 		QueryParameters qp = new QueryParameters();
 		qp.setCity(city);
 		qp.setNum_bus_stop(num_bus_stop);
 		qp.setType(type);
 
-		System.out.println(qp+" distance_threshold:"+distance_threshold);
+		System.out.println(qp + " distance_threshold:" + distance_threshold);
 
 		if (!constants.cityList.contains(qp.getCity())) {
 			return null;
@@ -65,7 +63,7 @@ public class ApproxQueryService {
 			result.add(rbean);
 		}
 
-		updateBeansNodeLocationInformation(result, city,queryD);
+		updateBeansNodeLocationInformation(result, city, queryD, type);
 		return Response.status(200).entity(result).header("Access-Control-Allow-Origin", "*").build();
 
 	}
@@ -78,9 +76,8 @@ public class ApproxQueryService {
 			@PathParam("threshold") double distance_threshold, @PathParam("type") String type,
 			@PathParam("num_bus_stop") int num_bus_stop) {
 
-		System.out.println("\n Call the function approxRangeIndexedByLocation ");
+		System.out.println("\nCall the function approxRangeIndexedByLocation ");
 
-		
 		if (!constants.cityList.contains(city)) {
 			return null;
 		}
@@ -90,6 +87,7 @@ public class ApproxQueryService {
 		}
 
 		int isAIOP = isAInterestingOfPoint(city, lat, lng, type);
+		System.out.println("found   " + isAIOP + "  " + (isAIOP != -1));
 
 		if (isAIOP != -1) {
 			int id = isAIOP;
@@ -99,7 +97,7 @@ public class ApproxQueryService {
 			qp.setCity(city);
 			qp.setNum_bus_stop(num_bus_stop);
 			qp.setType(type);
-			System.out.println(qp+" distance_threshold:"+distance_threshold);
+			System.out.println(qp + " distance_threshold:" + distance_threshold);
 
 			ApproxRangeIndex approx_range_index = new ApproxRangeIndex(city, distance_threshold, qp);
 			approx_range_index.baseline(lat, lng);
@@ -109,8 +107,8 @@ public class ApproxQueryService {
 				result.add(rbean);
 			}
 			Data queryData = new Data(3);
-			queryData.setData(new float[] { -1, -1, -1});
-			updateBeansNodeLocationInformation(result, city,queryData);
+			queryData.setData(new float[] { -1, -1, -1 });
+			updateBeansNodeLocationInformation(result, city, queryData, type);
 			return Response.status(200).entity(result).header("Access-Control-Allow-Origin", "*").build();
 		}
 	}
@@ -121,7 +119,7 @@ public class ApproxQueryService {
 	public Response ApproxMixedIndexedQueryByIdQueryParameters(@PathParam("city") String city,
 			@PathParam("id") int queryPlaceId, @PathParam("threshold") double distance_threshold,
 			@PathParam("type") String type, @PathParam("num_bus_stop") int num_bus_stop) {
-		
+
 		System.out.println("\n Call the function approxMixedIndexedById ");
 
 		QueryParameters qp = new QueryParameters();
@@ -129,7 +127,7 @@ public class ApproxQueryService {
 		qp.setNum_bus_stop(num_bus_stop);
 		qp.setType(type);
 
-		System.out.println(qp+" distance_threshold:"+distance_threshold);
+		System.out.println(qp + " distance_threshold:" + distance_threshold);
 
 		if (!constants.cityList.contains(qp.getCity())) {
 			return null;
@@ -150,7 +148,7 @@ public class ApproxQueryService {
 			result.add(rbean);
 		}
 
-		updateBeansNodeLocationInformation(result, city, queryD);
+		updateBeansNodeLocationInformation(result, city, queryD, type);
 		return Response.status(200).entity(result).header("Access-Control-Allow-Origin", "*").build();
 
 	}
@@ -182,7 +180,7 @@ public class ApproxQueryService {
 			qp.setCity(city);
 			qp.setNum_bus_stop(num_bus_stop);
 			qp.setType(type);
-			System.out.println(qp+" distance_threshold:"+distance_threshold);
+//			System.out.println("!~~~" + qp + " distance_threshold:" + distance_threshold);
 
 			ApproxMixedIndex approx_mixed_index = new ApproxMixedIndex(city, distance_threshold, qp);
 			approx_mixed_index.baseline(lat, lng);
@@ -191,16 +189,17 @@ public class ApproxQueryService {
 				ResultBean rbean = new ResultBean(r);
 				result.add(rbean);
 			}
-			
-			Data queryData = new Data(3);
-			queryData.setData(new float[] { -1, -1, -1});
 
-			updateBeansNodeLocationInformation(result, city, queryData);
+			Data queryData = new Data(3);
+			queryData.setData(new float[] { -1, -1, -1 });
+
+			updateBeansNodeLocationInformation(result, city, queryData, type);
 			return Response.status(200).entity(result).header("Access-Control-Allow-Origin", "*").build();
 		}
 	}
 
-	private void updateBeansNodeLocationInformation(ArrayList<ResultBean> result, String city, Data queryData) {
+	private void updateBeansNodeLocationInformation(ArrayList<ResultBean> result, String city, Data queryData,
+			String type) {
 		String home_folder = System.getProperty("user.home");
 		String graphPath = home_folder + "/neo4j334/testdb_" + city + "_Gaussian/databases/graph.db";
 		connector n = new connector(graphPath);
@@ -214,10 +213,13 @@ public class ApproxQueryService {
 					nbean.setLat(locations[0]);
 					nbean.setLng(locations[1]);
 				}
-				rbean.end_name = getLocationNameByID(rbean.end, city);
+				rbean.end_name = getLocationNameByID(rbean.end, city, type);
 				double[] querycosts = queryData.getData();
-				//System.out.println(querycosts.length);
-				System.arraycopy(querycosts, 0, rbean.querycosts, 4, querycosts.length);
+//				System.out.println(rbean.end_name);
+//				System.arraycopy(querycosts, 0, rbean.querycosts, 4, querycosts.length);
+				rbean.querycosts[4]= 5-querycosts[0];
+				rbean.querycosts[5]= querycosts[1];
+				rbean.querycosts[6]= 10-querycosts[2];
 			}
 			tx.success();
 		}
@@ -225,11 +227,16 @@ public class ApproxQueryService {
 		n.shutdownDB();
 	}
 
-	private String getLocationNameByID(long id, String city) {
+	private String getLocationNameByID(long id, String city, String type) {
 		String name = null;
 		IOPobject iobj = new IOPobject();
 		String home_folder = System.getProperty("user.home");
-		String dataPath = home_folder + "/mydata/DemoProject/data/staticNode_real_" + city + ".txt";
+		String dataPath = "";
+		if (type.equals("all") || type == null || type.equals("")) {
+			dataPath = home_folder + "/mydata/DemoProject/data/staticNode_real_" + city + ".txt";
+		} else {
+			dataPath = home_folder + "/mydata/DemoProject/data/staticNode_real_" + city + "_" + type + ".txt";
+		}
 
 		BufferedReader br = null;
 		int linenumber = 0;
@@ -314,15 +321,15 @@ public class ApproxQueryService {
 	}
 
 	public static void main(String args[]) {
-		String city = "LA";
-		double lat = 37.7641209;
-		double lng = -122.468116;
-		long distance_threshold = 200;
-		String type = "food";
-		int num_bus_stop = -1;
+		String city = "SF";
+		double lat = 37.794597;
+		double lng = -122.395181;
+		long distance_threshold = 500;
+		String type = "lodging";
+		int num_bus_stop = 10;
 		ApproxQueryService aqs = new ApproxQueryService();
-//		aqs.ApproxRangeIndexedQueryByLocationQueryParameter(city, lat, lng, distance_threshold, type, num_bus_stop);
-		aqs.ApproxRangeIndexedQueryByIdQueryParameters(city, 1233, distance_threshold, type, num_bus_stop);
+		aqs.ApproxMixedIndexedQueryByLocationQueryParameter(city, lat, lng, distance_threshold, type, num_bus_stop);
+//		aqs.ApproxRangeIndexedQueryByIdQueryParameters(city, 1233, distance_threshold, type, num_bus_stop);
 //		aqs.ApproxMixedIndexedQueryByIdQueryParameters(city, 123, distance_threshold, type, num_bus_stop);
 	}
 

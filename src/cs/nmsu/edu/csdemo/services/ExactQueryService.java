@@ -62,7 +62,7 @@ public class ExactQueryService {
 			result.add(rbean);
 		}
 
-		updateBeansNodeLocationInformation(result, city, queryD);
+		updateBeansNodeLocationInformation(result, city, queryD, type);
 		return Response.status(200).entity(result).header("Access-Control-Allow-Origin", "*").build();
 
 	}
@@ -104,14 +104,15 @@ public class ExactQueryService {
 			}
 
 			Data queryData = new Data(3);
-			queryData.setData(new float[] { -1, -1, -1});
+			queryData.setData(new float[] { -1, -1, -1 });
 
-			updateBeansNodeLocationInformation(result, city, queryData);
+			updateBeansNodeLocationInformation(result, city, queryData, type);
 			return Response.status(200).entity(result).header("Access-Control-Allow-Origin", "*").build();
 		}
 	}
 
-	private void updateBeansNodeLocationInformation(ArrayList<ResultBean> result, String city, Data queryData) {
+	private void updateBeansNodeLocationInformation(ArrayList<ResultBean> result, String city, Data queryData,
+			String type) {
 		String home_folder = System.getProperty("user.home");
 		String graphPath = home_folder + "/neo4j334/testdb_" + city + "_Gaussian/databases/graph.db";
 		connector n = new connector(graphPath);
@@ -125,9 +126,13 @@ public class ExactQueryService {
 					nbean.setLat(locations[0]);
 					nbean.setLng(locations[1]);
 				}
-				rbean.end_name = getLocationNameByID(rbean.end, city);
+				rbean.end_name = getLocationNameByID(rbean.end, city, type);
 				double[] querycosts = queryData.getData();
-				System.arraycopy(querycosts, 0, rbean.querycosts, 4, querycosts.length);
+//				System.arraycopy(querycosts, 0, rbean.querycosts, 4, querycosts.length);
+				rbean.querycosts[4]= 5-querycosts[0];
+				rbean.querycosts[5]= querycosts[1];
+				rbean.querycosts[6]= 10-querycosts[2];
+
 			}
 			tx.success();
 		}
@@ -135,11 +140,16 @@ public class ExactQueryService {
 		n.shutdownDB();
 	}
 
-	private String getLocationNameByID(long id, String city) {
+	private String getLocationNameByID(long id, String city, String type) {
 		String name = null;
 		IOPobject iobj = new IOPobject();
 		String home_folder = System.getProperty("user.home");
-		String dataPath = home_folder + "/mydata/DemoProject/data/staticNode_real_" + city + ".txt";
+		String dataPath = "";
+		if (type.equals("all") || type == null || type.equals("")) {
+			dataPath = home_folder + "/mydata/DemoProject/data/staticNode_real_" + city + ".txt";
+		} else {
+			dataPath = home_folder + "/mydata/DemoProject/data/staticNode_real_" + city + "_" + type + ".txt";
+		}
 
 		BufferedReader br = null;
 		int linenumber = 0;
