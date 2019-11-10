@@ -15,6 +15,7 @@ public class ResultBean {
 	public ArrayList<NodeBeans> nodeIDs;
 	public ArrayList<Long> relsIDs;
 	public double[] costs = new double[constants.path_dimension + 3];
+	public double[] querycosts = new double[constants.path_dimension + 3];
 
 	public ResultBean() {
 		this.start = this.end = -1;

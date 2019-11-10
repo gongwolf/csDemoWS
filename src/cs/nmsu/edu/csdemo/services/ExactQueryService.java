@@ -41,14 +41,13 @@ public class ExactQueryService {
 
 		System.out.println("\n Call the function ExactImprovedIndex by ID ");
 		System.out.println(qp);
-		System.out.println("===================="+ (type != null)+"  " + (!type.equals("")));
-
+		System.out.println("====================" + (type != null) + "  " + (!type.equals("")));
 
 		if (!constants.cityList.contains(qp.getCity())) {
 			return null;
 		}
 
-		if ( (type != null&&!type.equals("")) && !constants.typeList.contains(type)) {
+		if ((type != null && !type.equals("")) && !constants.typeList.contains(type)) {
 			return null;
 		}
 
@@ -63,7 +62,7 @@ public class ExactQueryService {
 			result.add(rbean);
 		}
 
-		updateBeansNodeLocationInformation(result, city);
+		updateBeansNodeLocationInformation(result, city, queryD);
 		return Response.status(200).entity(result).header("Access-Control-Allow-Origin", "*").build();
 
 	}
@@ -80,7 +79,7 @@ public class ExactQueryService {
 			return null;
 		}
 
-		if ((type != null&&!type.equals(""))  && !constants.typeList.contains(type)) {
+		if ((type != null && !type.equals("")) && !constants.typeList.contains(type)) {
 			return null;
 		}
 
@@ -104,12 +103,15 @@ public class ExactQueryService {
 				result.add(rbean);
 			}
 
-			updateBeansNodeLocationInformation(result, city);
+			Data queryData = new Data(3);
+			queryData.setData(new float[] { -1, -1, -1});
+
+			updateBeansNodeLocationInformation(result, city, queryData);
 			return Response.status(200).entity(result).header("Access-Control-Allow-Origin", "*").build();
 		}
 	}
 
-	private void updateBeansNodeLocationInformation(ArrayList<ResultBean> result, String city) {
+	private void updateBeansNodeLocationInformation(ArrayList<ResultBean> result, String city, Data queryData) {
 		String home_folder = System.getProperty("user.home");
 		String graphPath = home_folder + "/neo4j334/testdb_" + city + "_Gaussian/databases/graph.db";
 		connector n = new connector(graphPath);
@@ -124,6 +126,8 @@ public class ExactQueryService {
 					nbean.setLng(locations[1]);
 				}
 				rbean.end_name = getLocationNameByID(rbean.end, city);
+				double[] querycosts = queryData.getData();
+				System.arraycopy(querycosts, 0, rbean.querycosts, 4, querycosts.length);
 			}
 			tx.success();
 		}
@@ -178,45 +182,45 @@ public class ExactQueryService {
 	}
 
 	// check whether the given location is a IOP in the data set.
-		private int isAInterestingOfPoint(String city, double lat, double lng, String type) {
-			String datapath;
-			int isIOP = -1;
-			double min_distance = Double.MAX_VALUE;
-			if (!type.equals("") && type != null) {
-				datapath = this.homepath + "/mydata/DemoProject/data/staticNode_real_" + city + "_" + type + ".txt";
-			} else {
-				datapath = this.homepath + "/mydata/DemoProject/data/staticNode_real_" + city + ".txt";
-			}
-
-			System.out.println("find the location from the file " + datapath);
-			double[] targetLocations = new double[2];
-
-			BufferedReader reader;
-			try {
-				reader = new BufferedReader(new FileReader(datapath));
-				String line = reader.readLine();
-				while (line != null) {
-					double lat2 = Double.parseDouble(line.split(",")[1]);
-					double lng2 = Double.parseDouble(line.split(",")[2]);
-					double distance = constants.distanceInMeters(lat, lng, lat2, lng2);
-					if (distance < min_distance) {
-						min_distance = distance;
-						if (distance < t_distance) {
-							isIOP = Integer.parseInt(line.split(",")[0]);
-							targetLocations[0] = lat2;
-							targetLocations[1] = lng2;
-						}
-					}
-					line = reader.readLine();
-				}
-				reader.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-			System.out.println(isIOP + " -->> distance to query location is " + (long) min_distance + "m   " + lat + " "
-					+ lng + "     " + targetLocations[0] + " " + targetLocations[1]);
-			return isIOP;
+	private int isAInterestingOfPoint(String city, double lat, double lng, String type) {
+		String datapath;
+		int isIOP = -1;
+		double min_distance = Double.MAX_VALUE;
+		if (!type.equals("") && type != null) {
+			datapath = this.homepath + "/mydata/DemoProject/data/staticNode_real_" + city + "_" + type + ".txt";
+		} else {
+			datapath = this.homepath + "/mydata/DemoProject/data/staticNode_real_" + city + ".txt";
 		}
+
+		System.out.println("find the location from the file " + datapath);
+		double[] targetLocations = new double[2];
+
+		BufferedReader reader;
+		try {
+			reader = new BufferedReader(new FileReader(datapath));
+			String line = reader.readLine();
+			while (line != null) {
+				double lat2 = Double.parseDouble(line.split(",")[1]);
+				double lng2 = Double.parseDouble(line.split(",")[2]);
+				double distance = constants.distanceInMeters(lat, lng, lat2, lng2);
+				if (distance < min_distance) {
+					min_distance = distance;
+					if (distance < t_distance) {
+						isIOP = Integer.parseInt(line.split(",")[0]);
+						targetLocations[0] = lat2;
+						targetLocations[1] = lng2;
+					}
+				}
+				line = reader.readLine();
+			}
+			reader.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		System.out.println(isIOP + " -->> distance to query location is " + (long) min_distance + "m   " + lat + " "
+				+ lng + "     " + targetLocations[0] + " " + targetLocations[1]);
+		return isIOP;
+	}
 
 }

@@ -65,7 +65,7 @@ public class ApproxQueryService {
 			result.add(rbean);
 		}
 
-		updateBeansNodeLocationInformation(result, city);
+		updateBeansNodeLocationInformation(result, city,queryD);
 		return Response.status(200).entity(result).header("Access-Control-Allow-Origin", "*").build();
 
 	}
@@ -108,8 +108,9 @@ public class ApproxQueryService {
 				ResultBean rbean = new ResultBean(r);
 				result.add(rbean);
 			}
-
-			updateBeansNodeLocationInformation(result, city);
+			Data queryData = new Data(3);
+			queryData.setData(new float[] { -1, -1, -1});
+			updateBeansNodeLocationInformation(result, city,queryData);
 			return Response.status(200).entity(result).header("Access-Control-Allow-Origin", "*").build();
 		}
 	}
@@ -149,7 +150,7 @@ public class ApproxQueryService {
 			result.add(rbean);
 		}
 
-		updateBeansNodeLocationInformation(result, city);
+		updateBeansNodeLocationInformation(result, city, queryD);
 		return Response.status(200).entity(result).header("Access-Control-Allow-Origin", "*").build();
 
 	}
@@ -190,13 +191,16 @@ public class ApproxQueryService {
 				ResultBean rbean = new ResultBean(r);
 				result.add(rbean);
 			}
+			
+			Data queryData = new Data(3);
+			queryData.setData(new float[] { -1, -1, -1});
 
-			updateBeansNodeLocationInformation(result, city);
+			updateBeansNodeLocationInformation(result, city, queryData);
 			return Response.status(200).entity(result).header("Access-Control-Allow-Origin", "*").build();
 		}
 	}
 
-	private void updateBeansNodeLocationInformation(ArrayList<ResultBean> result, String city) {
+	private void updateBeansNodeLocationInformation(ArrayList<ResultBean> result, String city, Data queryData) {
 		String home_folder = System.getProperty("user.home");
 		String graphPath = home_folder + "/neo4j334/testdb_" + city + "_Gaussian/databases/graph.db";
 		connector n = new connector(graphPath);
@@ -211,6 +215,9 @@ public class ApproxQueryService {
 					nbean.setLng(locations[1]);
 				}
 				rbean.end_name = getLocationNameByID(rbean.end, city);
+				double[] querycosts = queryData.getData();
+				System.out.println(querycosts.length);
+				System.arraycopy(querycosts, 0, rbean.querycosts, 4, querycosts.length);
 			}
 			tx.success();
 		}
